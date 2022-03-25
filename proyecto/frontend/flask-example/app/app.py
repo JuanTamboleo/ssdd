@@ -1,5 +1,7 @@
+from crypt import methods
 from flask import Flask, render_template, send_from_directory, url_for, request, redirect
 from flask_login import LoginManager, login_manager, current_user, login_user, login_required, logout_user
+
 
 # Usuarios
 from models import users, User
@@ -23,6 +25,39 @@ def serve_static(path):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/prueba')
+def prueba():
+    return render_template('prueba.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    else:
+        return render_template('signup.html')
+
+@app.route('/uploadvideo')
+def uploadvideo():
+    return render_template('uploadvideoscreen.html')
+
+@app.route('/uploadingvideo', methods=['GET', 'POST'])
+def uploadingvideo():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
