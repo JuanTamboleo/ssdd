@@ -13,6 +13,8 @@ import es.um.sisdist.videofaces.backend.dao.user.IUserDAO;
 import es.um.sisdist.videofaces.backend.grpc.GrpcServiceGrpc;
 import es.um.sisdist.videofaces.backend.grpc.VideoAvailability;
 import es.um.sisdist.videofaces.backend.grpc.VideoSpec;
+import es.um.sisdist.videofaces.models.UserDTO;
+import es.um.sisdist.videofaces.models.UserDTOUtils;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
@@ -90,5 +92,13 @@ public class AppLogicImpl
         }
 
         return Optional.empty();
+    }
+    
+    
+    // Registro de usuario
+    public Optional<User> register(String email, String username, String pass){
+    	UserDTO uo = new UserDTO(pass, email, pass, username, pass, 0);
+    	
+    	return Optional.of(UserDTOUtils.fromDTO(uo));
     }
 }
