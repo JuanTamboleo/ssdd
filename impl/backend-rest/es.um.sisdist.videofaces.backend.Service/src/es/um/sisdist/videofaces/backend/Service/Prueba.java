@@ -18,12 +18,11 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
-
 @Path("/prueba")
 public class Prueba {
 
-//	private AppLogicImpl impl = AppLogicImpl.getInstance();
-	
+	private AppLogicImpl impl = AppLogicImpl.getInstance();
+
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	public String sayPlainTextHello() {
@@ -39,18 +38,24 @@ public class Prueba {
 //				.build();
 //		return Response.ok(value).build();
 //	}
-	
-	
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response checkUser(UserDTO uo)
-    {
-        Optional<User> u = impl.checkLogin(uo.getEmail(), uo.getPassword());
-        if (u.isPresent())
-            return Response.ok(UserDTOUtils.toDTO(u.get())).build();
-        else
-            return Response.status(Status.FORBIDDEN).build();
-    }
-	
+
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response checkUser(UserDTO uo) {
+		System.out.println(uo.getPassword());
+		Optional<User> u = impl.checkLogin(uo.getEmail(), uo.getPassword());
+		if (u.isPresent()) {
+			System.out.println("----------\nUSUARIO YA CREADO\n---------");
+			return Response.ok(UserDTOUtils.toDTO(u.get())).build();
+		} else {
+			Optional<User> ou = impl.register(uo.getEmail(), uo.getName(), uo.getPassword());
+			System.out.println(uo.getEmail() + " - " + uo.getName() + " - " + uo.getPassword());
+			
+			JsonObject value = Json.createObjectBuilder().add("Nombre", uo.getName()).add("Mail", uo.getEmail())
+					.add("Pass", uo.getPassword()).build();
+			return Response.ok(value).build();
+		}
+	}
+
 }

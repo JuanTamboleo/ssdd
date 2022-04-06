@@ -93,7 +93,7 @@ def login():
 def register():
     form = RegisterForm(request.form)
     if request.method == "POST" and form.validate_on_submit():
-        payload = {'email': form.email.data, 'username': form.username.data, 'password': form.password.data}
+        payload = {'email': form.email.data, 'name': form.username.data, 'password': form.password.data}
         r = requests.post('http://localhost:8080/Service/prueba', json=payload)
         return r.text
         app.logger.info("domingo domigno %s", r.text)

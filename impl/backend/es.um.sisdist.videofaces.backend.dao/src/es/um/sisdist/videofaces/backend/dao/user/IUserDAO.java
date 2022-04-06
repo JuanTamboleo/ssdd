@@ -9,4 +9,6 @@ public interface IUserDAO
     public Optional<User> getUserById(String id);
 
     public Optional<User> getUserByEmail(String id);
+
+	public boolean addUser(String email, String name, String password);
 }

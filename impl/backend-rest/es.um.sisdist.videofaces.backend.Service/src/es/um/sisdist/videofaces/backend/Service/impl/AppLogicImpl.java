@@ -22,83 +22,77 @@ import io.grpc.ManagedChannelBuilder;
  * @author dsevilla
  *
  */
-public class AppLogicImpl
-{
-    IDAOFactory daoFactory;
-    IUserDAO dao;
+public class AppLogicImpl {
+	IDAOFactory daoFactory;
+	IUserDAO dao;
 
-    private static final Logger logger = Logger.getLogger(AppLogicImpl.class.getName());
+	private static final Logger logger = Logger.getLogger(AppLogicImpl.class.getName());
 
-    private final ManagedChannel channel;
-    private final GrpcServiceGrpc.GrpcServiceBlockingStub blockingStub;
-    private final GrpcServiceGrpc.GrpcServiceStub asyncStub;
+	private final ManagedChannel channel;
+	private final GrpcServiceGrpc.GrpcServiceBlockingStub blockingStub;
+	private final GrpcServiceGrpc.GrpcServiceStub asyncStub;
 
-    static AppLogicImpl instance = new AppLogicImpl();
+	static AppLogicImpl instance = new AppLogicImpl();
 
-    private AppLogicImpl()
-    {
-        daoFactory = new DAOFactoryImpl();
-        dao = daoFactory.createSQLUserDAO();
+	private AppLogicImpl() {
+		daoFactory = new DAOFactoryImpl();
+		dao = daoFactory.createSQLUserDAO();
 
-        Optional<String> grpcServerName = Optional.ofNullable(System.getenv("GRPC_SERVER"));
-        Optional<String> grpcServerPort = Optional.ofNullable(System.getenv("GRPC_SERVER_PORT"));
+		Optional<String> grpcServerName = Optional.ofNullable(System.getenv("GRPC_SERVER"));
+		Optional<String> grpcServerPort = Optional.ofNullable(System.getenv("GRPC_SERVER_PORT"));
 
-        channel = ManagedChannelBuilder
-                .forAddress(grpcServerName.orElse("localhost"), Integer.parseInt(grpcServerPort.orElse("50051")))
-                // Channels are secure by default (via SSL/TLS). For the example we disable TLS
-                // to avoid
-                // needing certificates.
-                .usePlaintext().build();
-        blockingStub = GrpcServiceGrpc.newBlockingStub(channel);
-        asyncStub = GrpcServiceGrpc.newStub(channel);
-    }
+		channel = ManagedChannelBuilder
+				.forAddress(grpcServerName.orElse("localhost"), Integer.parseInt(grpcServerPort.orElse("50051")))
+				// Channels are secure by default (via SSL/TLS). For the example we disable TLS
+				// to avoid
+				// needing certificates.
+				.usePlaintext().build();
+		blockingStub = GrpcServiceGrpc.newBlockingStub(channel);
+		asyncStub = GrpcServiceGrpc.newStub(channel);
+	}
 
-    public static AppLogicImpl getInstance()
-    {
-        return instance;
-    }
+	public static AppLogicImpl getInstance() {
+		return instance;
+	}
 
-    public Optional<User> getUserByEmail(String userId)
-    {
-        Optional<User> u = dao.getUserByEmail(userId);
-        return u;
-    }
+	public Optional<User> getUserByEmail(String userId) {
+		Optional<User> u = dao.getUserByEmail(userId);
+		return u;
+	}
 
-    public Optional<User> getUserById(String userId)
-    {
-        return dao.getUserById(userId);
-    }
+	public Optional<User> getUserById(String userId) {
+		return dao.getUserById(userId);
+	}
 
-    public boolean isVideoReady(String videoId)
-    {
-        // Test de grpc, puede hacerse con la BD
-        VideoAvailability available = blockingStub.isVideoReady(VideoSpec.newBuilder().setId(videoId).build());
-        return available.getAvailable();
-    }
+	public boolean isVideoReady(String videoId) {
+		// Test de grpc, puede hacerse con la BD
+		VideoAvailability available = blockingStub.isVideoReady(VideoSpec.newBuilder().setId(videoId).build());
+		return available.getAvailable();
+	}
 
-    // El frontend, a través del formulario de login,
-    // envía el usuario y pass, que se convierte a un DTO. De ahí
-    // obtenemos la consulta a la base de datos, que nos retornará,
-    // si procede,
-    public Optional<User> checkLogin(String email, String pass)
-    {
-        Optional<User> u = dao.getUserByEmail(email);
+	// El frontend, a través del formulario de login,
+	// envía el usuario y pass, que se convierte a un DTO. De ahí
+	// obtenemos la consulta a la base de datos, que nos retornará,
+	// si procede,
+	public Optional<User> checkLogin(String email, String pass) {
+		Optional<User> u = dao.getUserByEmail(email);
+		
+		if (u.isPresent()) {
+			String hashed_pass = User.md5pass(pass);
+//			System.out.println(hashed_pass + " " + u.get().getPassword_hash());
+			if (0 == hashed_pass.compareTo(u.get().getPassword_hash())) {
+//				System.out.println("Ramín");
+				return u;
+			}
+		}
 
-        if (u.isPresent())
-        {
-            String hashed_pass = User.md5pass(pass);
-            if (0 == hashed_pass.compareTo(u.get().getPassword_hash()))
-                return u;
-        }
+		return Optional.empty();
+	}
 
-        return Optional.empty();
-    }
-    
-    
-    // Registro de usuario
-    public Optional<User> register(String email, String username, String pass){
-    	UserDTO uo = new UserDTO(pass, email, pass, username, pass, 0);
-    	
-    	return Optional.of(UserDTOUtils.fromDTO(uo));
-    }
+	// Registro de usuario
+	public Optional<User> register(String email, String username, String pass) {
+		UserDTO uo = new UserDTO(pass, email, pass, username, pass, 0);
+		System.out.println("---------------Funciona?\n"+dao.addUser(email, username, pass)+"\n----------------");
+		return Optional.of(UserDTOUtils.fromDTO(uo));
+	}
 }
