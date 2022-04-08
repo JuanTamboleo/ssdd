@@ -7,7 +7,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Optional;
 
 import es.um.sisdist.videofaces.backend.dao.models.User;
@@ -72,27 +74,78 @@ public class SQLUserDAO implements IUserDAO {
 		}
 	}
 
-	public boolean addUser(String email, String name, String password) {
-		// the mysql insert statement
-		String query = " insert into users (email, name, password_hash, id)" + " values (?, ?, ?, ?)";
+	public Optional<User> addUser(String email, String name, String password) {
+		// Get the max ID
 
-		// create the mysql insert preparedstatement
+		String queryID = "SELECT max(CAST(id AS UNSIGNED)) FROM users";
+		PreparedStatement preparedStmtID;
+		try {
+			preparedStmtID = conn.prepareStatement(queryID);
+			ResultSet rs = preparedStmtID.executeQuery();
+			rs.next();
+			String id = rs.getString(1) == null ? "0" : String.valueOf(Long.valueOf(rs.getString(1)) + 1);
+			System.out.println("-------->" + id);
+
+			// the mysql insert statement
+			String query = " insert into users (id, email, password_hash, name, token, visits)"
+					+ " values (?, ?, ?, ?, ?, ?)";
+
+			// create the mysql insert preparedstatement
+			PreparedStatement preparedStmt;
+			preparedStmt = conn.prepareStatement(query);
+			preparedStmt.setString(1, id);
+			preparedStmt.setString(2, email);
+			preparedStmt.setString(3, User.md5pass(password));
+			preparedStmt.setString(4, name);
+			preparedStmt.setString(5, "TOKEN");
+			preparedStmt.setInt(6, 0);
+			preparedStmt.execute();
+			return Optional.of(new User(id, email, User.md5pass(password), name, "TOKEN", 0));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return Optional.empty();
+	}
+
+	public void deleteUsers() {
+		String query = "delete from users";
 		PreparedStatement preparedStmt;
 		try {
-			System.out.println(password + "" + User.md5pass(password));
 			preparedStmt = conn.prepareStatement(query);
-			preparedStmt.setString(1, email);
-			preparedStmt.setString(2, name);
-			preparedStmt.setString(3, User.md5pass(password));
-			preparedStmt.setString(4, "2");
 			preparedStmt.execute();
-			return true;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void printUsers() {
+		Statement st;
+		try {
+			st = conn.createStatement();
+
+			ResultSet rs = st.executeQuery("select * from users");
+			ResultSetMetaData rsmd = rs.getMetaData();
+
+			int columnsNumber = rsmd.getColumnCount();
+
+			// Iterate through the data in the result set and display it.
+
+			while (rs.next()) {
+				// Print one row
+				for (int i = 1; i <= columnsNumber; i++) {
+
+					System.out.print(rs.getString(i) + " "); // Print one element of a row
+
+				}
+
+				System.out.println();// Move to the next line to print the next row.
+
+			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		return false;
 	}
 
 }

@@ -79,9 +79,7 @@ public class AppLogicImpl {
 		
 		if (u.isPresent()) {
 			String hashed_pass = User.md5pass(pass);
-//			System.out.println(hashed_pass + " " + u.get().getPassword_hash());
 			if (0 == hashed_pass.compareTo(u.get().getPassword_hash())) {
-//				System.out.println("Ramín");
 				return u;
 			}
 		}
@@ -91,8 +89,15 @@ public class AppLogicImpl {
 
 	// Registro de usuario
 	public Optional<User> register(String email, String username, String pass) {
-		UserDTO uo = new UserDTO(pass, email, pass, username, pass, 0);
-		System.out.println("---------------Funciona?\n"+dao.addUser(email, username, pass)+"\n----------------");
-		return Optional.of(UserDTOUtils.fromDTO(uo));
+		Optional<User> u = dao.addUser(email, username, pass);
+		return u;
+	}
+	
+	public void deleteUsers() {
+		dao.deleteUsers();
+	}
+	
+	public void printUsers() {
+		dao.printUsers();
 	}
 }

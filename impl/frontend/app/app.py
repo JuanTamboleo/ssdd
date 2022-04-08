@@ -32,13 +32,6 @@ def index():
     return render_template('index.html')
 
 
-"""
-@app.route('/prueba')
-def prueba():
-    return render_template('prueba.html')
-"""
-
-
 @app.route('/a', methods=['GET', 'POST'])
 def prueba():
     payload = {'key1': 'value1'}
@@ -95,9 +88,13 @@ def register():
     if request.method == "POST" and form.validate_on_submit():
         payload = {'email': form.email.data, 'name': form.username.data, 'password': form.password.data}
         r = requests.post('http://localhost:8080/Service/prueba', json=payload)
-        return r.text
-        app.logger.info("domingo domigno %s", r.text)
-    app.logger.info("me cago en san dios %s", form.errors)
+        app.logger.info("domingo domigno %s", r.status_code)
+        if r.status_code == 201:
+            user = User(1, form.username, form.email.data.encode('utf-8'),
+                        form.password.data.encode('utf-8'))
+            users.append(user)
+            login_user(user, remember=form.remember_me.data)
+            return redirect(url_for('index'))
     return render_template('signup.html', form=form)
 
 

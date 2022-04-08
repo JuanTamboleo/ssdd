@@ -26,6 +26,10 @@ public class Prueba {
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	public String sayPlainTextHello() {
+//		impl.deleteUsers();
+		System.out.println("---------------------");
+		impl.printUsers();
+		System.out.println("---------------------");
 		return "Hello AAAAA";
 	}
 
@@ -42,19 +46,19 @@ public class Prueba {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response checkUser(UserDTO uo) {
-		System.out.println(uo.getPassword());
+	public Response registerUser(UserDTO uo) {
 		Optional<User> u = impl.checkLogin(uo.getEmail(), uo.getPassword());
 		if (u.isPresent()) {
 			System.out.println("----------\nUSUARIO YA CREADO\n---------");
-			return Response.ok(UserDTOUtils.toDTO(u.get())).build();
+			return Response.status(Status.FORBIDDEN).build();
 		} else {
-			Optional<User> ou = impl.register(uo.getEmail(), uo.getName(), uo.getPassword());
-			System.out.println(uo.getEmail() + " - " + uo.getName() + " - " + uo.getPassword());
-			
-			JsonObject value = Json.createObjectBuilder().add("Nombre", uo.getName()).add("Mail", uo.getEmail())
-					.add("Pass", uo.getPassword()).build();
-			return Response.ok(value).build();
+			impl.register(uo.getEmail(), uo.getName(), uo.getPassword());
+//			Optional<User> ou = impl.register(uo.getEmail(), uo.getName(), uo.getPassword());
+//			System.out.println(ou.get().getEmail() + " - " + ou.get().getName() + " - " + ou.get().getPassword_hash()
+//					+ " - " + ou.get().getId());
+//			JsonObject value = Json.createObjectBuilder().add("id", ou.get().getId()).add("name", ou.get().getName())
+//					.add("email", ou.get().getEmail()).add("password", ou.get().getPassword_hash()).build();
+			return Response.status(Status.CREATED).build();
 		}
 	}
 
