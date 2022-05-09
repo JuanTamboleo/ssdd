@@ -6,13 +6,48 @@
 
 {% block main %}
 
-<h1 class="mt-5" style="position:relative; margin:auto; margin-bottom:0px;">
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <br>
+            <h1>Subir un vídeo</h1>
+            <hr>
+            <br>
+
+            <form action="/uploadvideo" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" name="video" id="video" >
+                    </div>
+                </div>
+
+                <br>
+
+                <button type=submit class="btn btn-primary">
+                    Subir vídeo
+                </button>
+
+            </form>
+            <br>
+            {% if error %}
+                <p class="error"><strong>Error:</strong> {{ error }}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+<!--<h1 class="mt-5" style="position:relative; margin:auto; margin-bottom:0px;">
     Pulse en la imagen para subir un vídeo
 </h1>
 <p class="lead" style="position:relative; margin:auto; margin-top:0px; margin-bottom:0px;">
-    Formatos aceptados: MP4, AVI, MKV. 
+    Formatos aceptados: MP4, AVI, MKV.
 </p>
 
-<button type="button" style="background-color:white; border:none; margin: 0; position: relative; margin-top: 120px;"><img src="{{url_for ('static', filename = './images/uploadvideo.png')}}" height ="200" width="200" /></button>
+<form method="POST" style="position: absolute; top: 40%; left: 45%">
+    <button type="submit" style="background-color:white; border:none">
+        <img src="{{url_for ('static', filename = './images/uploadvideo.png')}}" height="200" width="200"/>
+    </button>
+</form>-->
 
 {% endblock %}

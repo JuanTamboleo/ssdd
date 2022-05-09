@@ -44,14 +44,14 @@
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="#">Inicio</a>
           </li>
-          <!--
           <li class="nav-item">
-            <a class="nav-link" href="prueba">Cosas de las que me arrepiento</a>
+            <a class="nav-link" href="uploadvideo">Subir un vídeo</a>
           </li>
-          -->
+          <!--
           <li class="nav-item">
             <a class="nav-link" href="a">Otro enlace</a>
           </li>
+          -->
 
           {% if current_user.is_authenticated %}
           <li class="nav-item">
@@ -63,18 +63,18 @@
           </li>
           {% else %}
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for("register") }}">Sign up</a>
+            <a class="nav-link" href="{{ url_for("register") }}">Registro</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for("login") }}">Sign in</a>
+            <a class="nav-link" href="{{ url_for("login") }}">Inicio de sesión</a>
           </li>
           {% endif %}
 
         </ul>
-        <!-- <form class="d-flex"> -->
-        <!--   <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"> -->
-        <!--   <button class="btn btn-outline-success" type="submit">Search</button> -->
-        <!-- </form> -->
+         <!--<form class="d-flex">
+           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+           <button class="btn btn-outline-success" type="submit">Search</button>
+         </form> -->
       </div>
     </div>
   </nav>
@@ -97,7 +97,7 @@
 
 <footer class="footer mt-auto py-3 bg-light">
   <div class="container" style="margin-left:0px">
-    <span class="text-muted">Os juramos que el reconocimiento facial no es para el FBI</span>
+    <span class="text-muted">Video-faces app</span>
   </div>
 </footer>
 

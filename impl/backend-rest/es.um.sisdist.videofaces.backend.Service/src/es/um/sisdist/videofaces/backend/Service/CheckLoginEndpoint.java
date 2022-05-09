@@ -27,6 +27,7 @@ public class CheckLoginEndpoint
     public Response checkUser(UserDTO uo)
     {
         Optional<User> u = impl.checkLogin(uo.getEmail(), uo.getPassword());
+        System.out.println("*_*"+u.get().getName());
         if (u.isPresent())
             return Response.ok(UserDTOUtils.toDTO(u.get())).build();
         else
