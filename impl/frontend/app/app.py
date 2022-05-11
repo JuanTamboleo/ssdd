@@ -1,7 +1,7 @@
 import requests
 from flask import Flask, render_template, send_from_directory, url_for, request, redirect, flash
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
-import os
+
 
 # Usuarios
 from models import users, User
@@ -39,7 +39,8 @@ def index():
 #     r = requests.post("http://localhost:8080/Service/prueba", json=payload)
 #     return r.text
 
-app.config["IMAGE_UPLOADS"] = "/Users/jtamb/Desktop/Trabajos/Cuarto/SSDD/ssdd-21-22/impl/frontend/app/static/images/uploads"
+app.config[
+    "IMAGE_UPLOADS"] = "/Users/jtamb/Desktop/Trabajos/Cuarto/SSDD/ssdd-21-22/impl/frontend/app/static/images/uploads"
 app.config["ALLOWED_VIDEO_EXTENSIONS"] = ["MP4", "AVI", "MKV"]
 FILE_UPLOAD_MAX_MEMORY_SIZE = int(1024 * 1024 * 1024 * 1024)
 
@@ -56,22 +57,20 @@ def allowed_video(filename):
 
 @app.route('/uploadvideo', methods=['GET', 'POST'])
 def uploadvideo():
+    error = None
     if request.method == "POST":
         if request.files:
             video = request.files["video"]
             print(video.filename)
             if video.filename == "":
                 error = "Debe tener un nombre"
-                return render_template('uploadvideoscreen.html', error=error)
             elif allowed_video(video.filename):
                 # video.save(os.path.join(app.config['IMAGE_UPLOADS'], video.filename))
                 r = requests.post('http://localhost:8080/Service/sendvideos', files={'file': video})
                 print("Image saved %s", r.status_code)
-                return render_template('uploadvideoscreen.html')
             else:
                 error = "No está en el formato correcto"
-                return render_template('uploadvideoscreen.html', error=error)
-    return render_template('uploadvideoscreen.html')
+    return render_template('uploadvideoscreen.html', error=error)
 
 
 # @app.route('/uploadingvideo', methods=['GET', 'POST'])
@@ -129,6 +128,7 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm(request.form)
+    error = None
     if request.method == "POST" and form.validate_on_submit():
         payload = {'email': form.email.data, 'name': form.username.data, 'password': form.password.data}
         r = requests.post('http://localhost:8080/Service/prueba', json=payload)

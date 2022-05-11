@@ -9,6 +9,7 @@ import java.nio.file.StandardCopyOption;
 
 import org.eclipse.persistence.tools.file.FileUtil;
 
+import es.um.sisdist.videofaces.backend.Service.impl.AppLogicImpl;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -20,12 +21,17 @@ import jakarta.ws.rs.core.Response;
 @Path("/sendvideos")
 public class AlmacenarVideos {
 	
+	private AppLogicImpl impl = AppLogicImpl.getInstance();
 	
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	public String sayPlainTextHello() {
-//		impl.deleteUsers();
-		return "Hello AAAAA";
+		try {
+			impl.variosIDs();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return "Prueba Vídeos";
 	}
 
 	@POST

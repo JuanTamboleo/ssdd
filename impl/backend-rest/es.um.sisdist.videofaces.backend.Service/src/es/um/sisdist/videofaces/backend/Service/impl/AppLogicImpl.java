@@ -4,19 +4,22 @@
 package es.um.sisdist.videofaces.backend.Service.impl;
 
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+
+import com.google.protobuf.Empty;
 
 import es.um.sisdist.videofaces.backend.dao.DAOFactoryImpl;
 import es.um.sisdist.videofaces.backend.dao.IDAOFactory;
 import es.um.sisdist.videofaces.backend.dao.models.User;
 import es.um.sisdist.videofaces.backend.dao.user.IUserDAO;
-import es.um.sisdist.videofaces.backend.grpc.GrpcServiceGrpc;
-import es.um.sisdist.videofaces.backend.grpc.VideoAvailability;
-import es.um.sisdist.videofaces.backend.grpc.VideoSpec;
+import es.um.sisdist.videofaces.backend.grpc.*;
 import es.um.sisdist.videofaces.models.UserDTO;
 import es.um.sisdist.videofaces.models.UserDTOUtils;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.stub.StreamObserver;
 
 /**
  * @author dsevilla
@@ -68,6 +71,50 @@ public class AppLogicImpl {
 		// Test de grpc, puede hacerse con la BD
 		VideoAvailability available = blockingStub.isVideoReady(VideoSpec.newBuilder().setId(videoId).build());
 		return available.getAvailable();
+	}
+	
+	public void variosIDs() throws InterruptedException {
+		final CountDownLatch finishLatch = new CountDownLatch(1);
+
+		StreamObserver<Empty> responseObserver = new StreamObserver<Empty>() {
+
+			@Override
+			public void onNext(Empty value) {
+				System.out.println("Cliente onNext");
+
+			}
+
+			@Override
+			public void onError(Throwable t) {
+				System.out.println("Cliente error");
+				finishLatch.countDown();
+
+			}
+
+			@Override
+			public void onCompleted() {
+				System.out.println("Cliente acaba");
+				finishLatch.countDown();
+			}
+
+		};
+		StreamObserver<VideoAndChunkData> requestObserver = asyncStub.processVideo(responseObserver);
+
+		try {
+			for (int i = 0; i < 10; i++) {
+				VideoAndChunkData strings = VideoAndChunkData.newBuilder().setVideoid("DesdeElCliente" + i).build();
+				requestObserver.onNext(strings);
+				Thread.sleep(500);
+				if (finishLatch.getCount() == 0) {
+					return;
+				}
+			}
+		} catch (RuntimeException e) {
+			requestObserver.onError(e);
+			throw e;
+		}
+		requestObserver.onCompleted();
+		finishLatch.await(1, TimeUnit.MINUTES);
 	}
 
 	// El frontend, a través del formulario de login,

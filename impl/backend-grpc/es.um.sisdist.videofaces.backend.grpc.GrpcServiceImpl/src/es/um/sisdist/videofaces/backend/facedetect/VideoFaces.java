@@ -30,10 +30,7 @@ public class VideoFaces
     {
         // VideoCapture vc = new VideoCapture( 320, 240 );
         // VideoDisplay<MBFImage> video = VideoDisplay.createVideoDisplay( vc );
-        Video<MBFImage> video = new XuggleVideo(
-                new File(args.length == 0
-                        ? "videos/face-demographics-walking-and-pause.mp4"
-                        : args[0]));
+        Video<MBFImage> video = new XuggleVideo("videos/face-demographics-walking-and-pause.mp4");
         VideoDisplay<MBFImage> vd = VideoDisplay.createOffscreenVideoDisplay(video);
 
         // El Thread de procesamiento de vídeo se termina al terminar el vídeo.
@@ -56,7 +53,7 @@ public class VideoFaces
                     {
                         // También permite enviar la imagen a un OutputStream
                         ImageUtilities.write(frame.extractROI(face.getBounds()),
-                                new File(String.format("/tmp/img%05d.jpg", imgn++)));
+                                new File(String.format("C:\\Users\\jtamb\\Desktop\\Trabajos\\Cuarto\\SSDD\\tmp\\img%05d.jpg", imgn++)));
                     } catch (IOException e)
                     {
                         // TODO Auto-generated catch block
