@@ -2,18 +2,23 @@ package es.um.sisdist.videofaces.backend.Service;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 
 import org.eclipse.persistence.tools.file.FileUtil;
 
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -29,15 +34,19 @@ public class AlmacenarVideos {
 	}
 
 	@POST
+	@Path("/{id}/video")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response addVideo(InputStream inputStream) {
+	public Response addVideo(@PathParam("id") String userid, InputStream inputStream) {
 		System.out.println("VAS NO?");
 		try {
-			String path = "C:\\Users\\jtamb\\Desktop\\Trabajos\\Cuarto\\SSDD\\a.mp4";
-			File file = new File(path);
-			Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-//			saveFile(inputStream, path);
+			String path = "C:\\Users\\Samuel\\Documents\\a.mp4";
+			File auxfile = new File(path);
+			if(!auxfile.exists()) {
+				auxfile.createNewFile();
+			}
+									
+			Files.copy(inputStream, auxfile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			return Response.status(Response.Status.OK).build();
 		} catch (Exception e) {
 			e.printStackTrace();

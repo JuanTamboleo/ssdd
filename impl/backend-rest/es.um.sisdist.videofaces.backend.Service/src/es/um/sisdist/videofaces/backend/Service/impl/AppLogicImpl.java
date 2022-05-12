@@ -9,7 +9,9 @@ import java.util.logging.Logger;
 import es.um.sisdist.videofaces.backend.dao.DAOFactoryImpl;
 import es.um.sisdist.videofaces.backend.dao.IDAOFactory;
 import es.um.sisdist.videofaces.backend.dao.models.User;
+import es.um.sisdist.videofaces.backend.dao.models.Video;
 import es.um.sisdist.videofaces.backend.dao.user.IUserDAO;
+import es.um.sisdist.videofaces.backend.dao.video.IVideoDAO;
 import es.um.sisdist.videofaces.backend.grpc.GrpcServiceGrpc;
 import es.um.sisdist.videofaces.backend.grpc.VideoAvailability;
 import es.um.sisdist.videofaces.backend.grpc.VideoSpec;
@@ -25,6 +27,7 @@ import io.grpc.ManagedChannelBuilder;
 public class AppLogicImpl {
 	IDAOFactory daoFactory;
 	IUserDAO dao;
+	IVideoDAO videodao;
 
 	private static final Logger logger = Logger.getLogger(AppLogicImpl.class.getName());
 
@@ -37,6 +40,7 @@ public class AppLogicImpl {
 	private AppLogicImpl() {
 		daoFactory = new DAOFactoryImpl();
 		dao = daoFactory.createSQLUserDAO();
+		videodao = daoFactory.createSQLVideoDAO();
 
 		Optional<String> grpcServerName = Optional.ofNullable(System.getenv("GRPC_SERVER"));
 		Optional<String> grpcServerPort = Optional.ofNullable(System.getenv("GRPC_SERVER_PORT"));
@@ -62,6 +66,10 @@ public class AppLogicImpl {
 
 	public Optional<User> getUserById(String userId) {
 		return dao.getUserById(userId);
+	}
+	
+	public Optional<Video> getVideoById(String id) {
+		return videodao.getVideoById(id);
 	}
 
 	public boolean isVideoReady(String videoId) {
@@ -91,6 +99,11 @@ public class AppLogicImpl {
 	public Optional<User> register(String email, String username, String pass) {
 		Optional<User> u = dao.addUser(email, username, pass);
 		return u;
+	}
+	
+	public Optional<Video> saveVideo(String userid, String filename, byte[] videodata) {
+		Optional<Video> v = videodao.addVideo(userid, filename, videodata);
+		return v;
 	}
 	
 	public void deleteUsers() {

@@ -58,6 +58,7 @@ public class Prueba {
 //					+ " - " + ou.get().getId());
 //			JsonObject value = Json.createObjectBuilder().add("id", ou.get().getId()).add("name", ou.get().getName())
 //					.add("email", ou.get().getEmail()).add("password", ou.get().getPassword_hash()).build();
+			System.out.println("Maracanto");
 			return Response.status(Status.CREATED).build();
 		}
 	}

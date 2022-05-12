@@ -13,4 +13,6 @@ public interface IVideoDAO
     public InputStream getStreamForVideo(String id);
 
     public Video.PROCESS_STATUS getVideoStatus(String id);
+    
+    public Optional<Video> addVideo(String userid, String filename, byte[] videodata);
 }
