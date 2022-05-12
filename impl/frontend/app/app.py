@@ -66,21 +66,21 @@ def uploadvideo():
             if video.filename == "":
                 error = "Debe tener un nombre"
             elif allowed_video(video.filename):
-                information = {'user': current_user.get_id(), 'title': video.filename}
-                
-                print("Info: %d", json.dumps(information));
-                
-                files = {
-                    'json': json.dumps(information),
-                    #'file': video.filename, video, "application/octect-stream",
-                }
-                
-                r = requests.post("http://localhost:8080/Service/users/" + current_user.get_id() + "/video", data=video)
+                r = requests.post("http://localhost:8080/Service/users/" + current_user.get_id() + "/" + video.filename + "/video", data=video)
                 print("Image saved %s", r.status_code)
             else:
                 error = "No está en el formato correcto"
     return render_template('uploadvideoscreen.html', error=error)
 
+@app.route('/consultvideos', methods=['GET'])
+def consultvideos():
+    r = requests.get("http://localhost:8080/Service/users/" + current_user.get_id() + "/consultvideos");
+    
+    print("Morango %s", r.json())
+    
+    vids = r.json()
+    
+    return render_template('consultvideosscreen.html', videos=vids)
 
 # @app.route('/uploadingvideo', methods=['GET', 'POST'])
 # def uploadingvideo():
@@ -109,6 +109,9 @@ def login():
         form = LoginForm(request.form)
         if request.method == "POST" and form.validate_on_submit():
             payload = {'email': form.email.data, 'password': form.password.data}
+            
+            print("Payload: %s", payload);
+            
             r = requests.post('http://localhost:8080/Service/checkLogin', json=payload)
 
             if r.status_code == 200:

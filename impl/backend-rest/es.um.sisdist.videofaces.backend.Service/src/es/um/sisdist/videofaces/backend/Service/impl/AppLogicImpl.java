@@ -3,6 +3,7 @@
  */
 package es.um.sisdist.videofaces.backend.Service.impl;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -104,6 +105,10 @@ public class AppLogicImpl {
 	public Optional<Video> saveVideo(String userid, String filename, byte[] videodata) {
 		Optional<Video> v = videodao.addVideo(userid, filename, videodata);
 		return v;
+	}
+	
+	public List<Video> getVideosFromUser(String userid) {
+		return videodao.getVideosFromUser(userid);
 	}
 	
 	public void deleteUsers() {

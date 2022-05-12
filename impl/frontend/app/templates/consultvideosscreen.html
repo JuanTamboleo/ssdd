@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% endblock %}
+
+{% block main %}
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <br>
+            <h1>Mis vídeos</h1>
+            <hr>
+        </div>
+    </div>
+
+    <table id="videos" class="table table-stripped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for video in videos %}
+            <tr>
+                <td>{{ video.filename }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+
+<!--<h1 class="mt-5" style="position:relative; margin:auto; margin-bottom:0px;">
+    Pulse en la imagen para subir un vídeo
+</h1>
+<p class="lead" style="position:relative; margin:auto; margin-top:0px; margin-bottom:0px;">
+    Formatos aceptados: MP4, AVI, MKV.
+</p>
+
+<form method="POST" style="position: absolute; top: 40%; left: 45%">
+    <button type="submit" style="background-color:white; border:none">
+        <img src="{{url_for ('static', filename = './images/uploadvideo.png')}}" height="200" width="200"/>
+    </button>
+</form>-->
+
+{% endblock %}

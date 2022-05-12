@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Optional;
 
 import es.um.sisdist.videofaces.backend.Service.impl.AppLogicImpl;
@@ -36,11 +37,11 @@ public class UsersEndpoint
     }
     
     @POST
-	@Path("/{id}/video")
+	@Path("/{id}/{filename}/video")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response addVideo(@PathParam("id") String userid, InputStream inputStream) {
-		System.out.println("Video recibido");
+	public Response addVideo(@PathParam("id") String userid, @PathParam("filename") String filename, InputStream inputStream) {
+		System.out.println("Video recibido: " + filename);
 		try {
 			
 			byte[] videodata = inputStream.readAllBytes();
@@ -51,12 +52,12 @@ public class UsersEndpoint
 				System.out.println(userid);
 			}
 			
-			Optional<Video> v = impl.saveVideo(userid, "Prueba", videodata);
+			Optional<Video> v = impl.saveVideo(userid, filename, videodata);
 			if(v == null || !v.isPresent()) {
 				System.out.println("Una desgracia");
 			}
 			else {
-				System.out.print("Todo fresco: " + v.get().getFilename());
+				System.out.println("Todo fresco: " + v.get().getFilename());
 			}
 			
 			return Response.status(Response.Status.OK).build();
@@ -65,4 +66,23 @@ public class UsersEndpoint
 			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
 	}
+    
+    @GET
+    @Path("/{id}/consultvideos")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getVideosWithUserId(@PathParam("id") String userid) {
+    	System.out.println("Videos solicitados");
+    	
+    	String json = "[";
+    	List<Video> videos = impl.getVideosFromUser(userid);
+    	for(Video vi : videos) {
+    		json = json + "{\"filename\": \"" + vi.getFilename() + "\",\"id\": \"" + vi.getId() + "\"},";    		
+		}
+    	json = json.substring(0, json.length() - 1) + "]";
+    	
+		System.out.println("Vídeos: " + json);
+    	
+    	return Response.ok(json).build();
+    }
+    
 }
