@@ -5,6 +5,7 @@ package es.um.sisdist.videofaces.backend.Service.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -164,6 +165,10 @@ public class AppLogicImpl {
 
 	public Optional<Video> saveVideo(String userid, String filename, byte[] videodata) {
 		return videodao.addVideo(userid, filename, videodata);
+	}
+	
+	public List<Video> getVideosFromUser(String userid) {
+		return videodao.getVideosFromUser(userid);
 	}
 
 	public void deleteUsers() {

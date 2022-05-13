@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
@@ -110,6 +111,24 @@ public class UsersEndpoint {
 	public Response getVideo(@PathParam("id") String uid, @PathParam("vid") String vid) {
 
 		return null;
+	}
+
+	@GET
+	@Path("/{id}/consultvideos")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getVideosWithUserId(@PathParam("id") String userid) {
+		System.out.println("Videos solicitados");
+
+		String json = "[";
+		List<Video> videos = impl.getVideosFromUser(userid);
+		for (Video vi : videos) {
+			json = json + "{\"filename\": \"" + vi.getFilename() + "\",\"id\": \"" + vi.getId() + "\"},";
+		}
+		json = json.substring(0, json.length() - 1) + "]";
+
+		System.out.println("Vídeos: " + json);
+
+		return Response.ok(json).build();
 	}
 
 }

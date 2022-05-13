@@ -11,6 +11,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 
 import javax.sql.rowset.serial.SerialBlob;
@@ -131,23 +133,39 @@ public class SQLVideoDAO implements IVideoDAO {
 			preparedStmt = conn.prepareStatement(query);
 			preparedStmt.setString(1, id);
 			preparedStmt.setString(2, userid);
-
-			Date date = Calendar.getInstance().getTime();
-			DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
-			String fecha = dateFormat.format(date);
+			
+			Date date = Calendar.getInstance().getTime();  
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");  
+            String fecha = dateFormat.format(date);  
 			preparedStmt.setString(3, fecha);
-			preparedStmt.setString(4, "Nombre_del_fichero");
+			preparedStmt.setString(4, filename);
 			preparedStmt.setInt(5, 0); // Estatus, 0 para processing, 1 para processing
-
+			
 			Blob blob = new SerialBlob(videodata);
 			preparedStmt.setBlob(6, blob);
 			preparedStmt.execute();
-			return Optional.of(new Video(id, userid, Video.PROCESS_STATUS.PROCESSING, fecha, "Nombre_del_fichero"));
+			return Optional.of(new Video(id, userid, Video.PROCESS_STATUS.PROCESSING, fecha, filename));
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 
 		return Optional.empty();
+	}
+
+	@Override
+	public List<Video> getVideosFromUser(String userid) {
+		List<Video> list = new LinkedList<Video>();
+		PreparedStatement stm;
+		try {
+			stm = conn.prepareStatement("SELECT * from videos WHERE userid = ?");
+			stm.setString(1, userid);
+			ResultSet result = stm.executeQuery();
+			while (result.next()) {
+				list.add(createVideo(result).get());
+			}
+		} catch (SQLException e) {
+		}
+		return list;
 	}
 
 }

@@ -25,16 +25,16 @@ public class AlmacenarVideos {
 
 	private AppLogicImpl impl = AppLogicImpl.getInstance();
 
-	@GET
-	@Produces(MediaType.TEXT_HTML)
-	public String sayPlainTextHello() {
-		try {
-			impl.variosIDs();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		return "Prueba Vídeos";
-	}
+//	@GET
+//	@Produces(MediaType.TEXT_HTML)
+//	public String sayPlainTextHello() {
+//		try {
+//			impl.variosIDs();
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
+//		return "Prueba Vídeos";
+//	}
 
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)

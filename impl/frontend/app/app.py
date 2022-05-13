@@ -57,6 +57,17 @@ def allowed_video(filename):
         return False
 
 
+@app.route('/consultvideos', methods=['GET'])
+def consultvideos():
+    r = requests.get("http://localhost:8080/Service/users/" + current_user.get_id() + "/consultvideos");
+
+    print("Morango %s", r.json())
+
+    vids = r.json()
+
+    return render_template('consultvideosscreen.html', videos=vids)
+
+
 @app.route('/uploadvideo', methods=['GET', 'POST'])
 @login_required
 def uploadvideo():
@@ -69,8 +80,9 @@ def uploadvideo():
                 error = "Debe tener un nombre"
             elif allowed_video(video.filename):
                 if not current_user.get_id() == None:
-                    r = requests.post('http://localhost:8080/Service/users/' + current_user.get_id() + "/video",
-                                      data=video)
+                    r = requests.post(
+                        'http://localhost:8080/Service/users/' + current_user.get_id() + "/video.filename",
+                        data=video)
                     print("Image saved %s", r.status_code)
                     print("Dirección del vídeo", r.headers.get("Location"))
                 else:
@@ -112,7 +124,7 @@ def login():
             if r.status_code == 200:
                 user = User.get_user(form.email.data.encode('utf-8'))
                 if user is None:
-                    user = User(users.__len__() + 1, r.json()['name'], form.email.data.encode('utf-8'),
+                    user = User(r.json()['id'], r.json()['name'], form.email.data.encode('utf-8'),
                                 form.password.data.encode('utf-8'))
                     users.append(user)
                     app.logger.info("Usuarios --> %s", users)
