@@ -1,89 +1,80 @@
 package es.um.sisdist.videofaces.backend.grpc.impl;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Logger;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 
+import es.um.sisdist.videofaces.backend.facedetect.VideoFaces;
 import es.um.sisdist.videofaces.backend.grpc.GrpcServiceGrpc;
 import es.um.sisdist.videofaces.backend.grpc.VideoAndChunkData;
 import es.um.sisdist.videofaces.backend.grpc.VideoAvailability;
-import es.um.sisdist.videofaces.backend.grpc.VideoAvailabilityOrBuilder;
-import es.um.sisdist.videofaces.backend.grpc.VideoSpec;
 import io.grpc.stub.StreamObserver;
 
-class GrpcServiceImpl extends GrpcServiceGrpc.GrpcServiceImplBase 
-{
+class GrpcServiceImpl extends GrpcServiceGrpc.GrpcServiceImplBase {
 	private Logger logger;
-	
-    public GrpcServiceImpl(Logger logger) 
-    {
+
+	public GrpcServiceImpl(Logger logger) {
 		super();
 		this.logger = logger;
 	}
 
-    
 	@Override
-	public StreamObserver<VideoAndChunkData> processVideo(StreamObserver<Empty> responseObserver)
-	{
-		// TODO Auto-generated method stub
-		return super.processVideo(responseObserver);
-	}
+	public StreamObserver<VideoAndChunkData> processVideo(StreamObserver<VideoAvailability> responseObserver) {
+		return new StreamObserver<VideoAndChunkData>() {
+			String mensaje = "";
+//			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			ByteString completo = ByteString.EMPTY;
 
-	@Override
-	public void isVideoReady(VideoSpec request, StreamObserver<VideoAvailability> responseObserver)
-	{
-		responseObserver.onNext(VideoAvailability.newBuilder().setAvailable(true).build());
-		responseObserver.onCompleted();
-	}
+			@Override
+			public void onNext(VideoAndChunkData value) {
+				if (value.hasVideoid()) {
+					mensaje += value.getVideoid();
+					System.out.println("Id del vÌdeo " + mensaje);
+				} else {
+					completo = completo.concat(value.getData());
+//					try {
 
-/*
-	@Override
-	public void storeImage(ImageData request, StreamObserver<Empty> responseObserver)
-    {
-		logger.info("Add image " + request.getId());
-    	imageMap.put(request.getId(),request);
-    	responseObserver.onNext(Empty.newBuilder().build());
-    	responseObserver.onCompleted();
-	}
+//						outputStream.write(value.getData().toByteArray());
+//					} catch (IOException e) {
+//						e.printStackTrace();
+//					}
+					System.out.println("TamaÒo del trozo: " + value.getData().size());
+				}
+			}
 
-	@Override
-	public StreamObserver<ImageData> storeImages(StreamObserver<Empty> responseObserver) 
-	{
-		// La respuesta, s√≥lo un objeto Empty
-		responseObserver.onNext(Empty.newBuilder().build());
+			@Override
+			public void onError(Throwable t) {
+				System.out.println("Error");
+			}
 
-		// Se retorna un objeto que, al ser llamado en onNext() con cada
-		// elemento enviado por el cliente, reacciona correctamente
-		return new StreamObserver<ImageData>() {
 			@Override
 			public void onCompleted() {
-				// Terminar la respuesta.
+				System.out.println("Mensaje completo: " + mensaje);
+//				new Thread(new VideoFaces(completo.newInput())).start();
+				new VideoFaces(completo.newInput()).run();
+//				try {
+//					Thread.sleep(20000);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
+//				new Thread(new VideoFaces(new ByteArrayInputStream(outputStream.toByteArray()))).start();
+				responseObserver.onNext(VideoAvailability.newBuilder().setAvailable(true).build());
 				responseObserver.onCompleted();
 			}
-			@Override
-			public void onError(Throwable arg0) {
-			}
-			@Override
-			public void onNext(ImageData imagedata) 
-			{
-				logger.info("Add image (multiple) " + imagedata.getId());
-		    	imageMap.put(imagedata.getId(), imagedata);	
-			}
+
 		};
 	}
 
-	@Override
-	public void obtainImage(ImageSpec request, StreamObserver<ImageData> responseObserver) {
-		// TODO Auto-generated method stub
-		super.obtainImage(request, responseObserver);
-	}
-
-	@Override
-	public StreamObserver<ImageSpec> obtainCollage(StreamObserver<ImageData> responseObserver) {
-		// TODO Auto-generated method stub
-		return super.obtainCollage(responseObserver);
-	}
-	*/
+//	@Override
+//	public void isVideoReady(VideoSpec request, StreamObserver<VideoAvailability> responseObserver) {
+//		System.out.println("Petici√≥n de comprobar v√≠deo" + request.getId());
+//		VideoAvailability reply = VideoAvailability.newBuilder().setAvailable(true).build();
+//		responseObserver.onNext(reply);
+//		responseObserver.onCompleted();
+//	}
 }

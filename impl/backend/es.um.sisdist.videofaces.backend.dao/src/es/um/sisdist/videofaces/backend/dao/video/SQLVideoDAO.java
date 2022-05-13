@@ -23,7 +23,7 @@ import es.um.sisdist.videofaces.backend.dao.models.Video.PROCESS_STATUS;
 
 public class SQLVideoDAO implements IVideoDAO {
 	Connection conn;
-	
+
 	public SQLVideoDAO() {
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
@@ -56,22 +56,21 @@ public class SQLVideoDAO implements IVideoDAO {
 		}
 		return Optional.empty();
 	}
-	
+
 	private Optional<Video> createVideo(ResultSet result) {
 		try {
-			if(result.getInt(5) == 0) {
+			if (result.getInt(5) == 0) {
 				return Optional.of(new Video(result.getString(1), // id
 						result.getString(2), // userid
 						Video.PROCESS_STATUS.PROCESSING, // pwhash
 						result.getString(3), // date
-						result.getString(4))); // filename;  
-			}
-			else {
+						result.getString(4))); // filename;
+			} else {
 				return Optional.of(new Video(result.getString(1), // id
 						result.getString(2), // userid
 						Video.PROCESS_STATUS.PROCESSED, // pwhash
 						result.getString(3), // date
-						result.getString(4))); // filename;  
+						result.getString(4))); // filename;
 			}
 		} catch (SQLException e) {
 			return Optional.empty();
@@ -102,13 +101,12 @@ public class SQLVideoDAO implements IVideoDAO {
 			ResultSet result = stm.executeQuery();
 			if (result.next()) {
 				int aux = result.getInt(5);
-				if(aux == 0) {
-					return(PROCESS_STATUS.PROCESSING);
+				if (aux == 0) {
+					return (PROCESS_STATUS.PROCESSING);
+				} else {
+					return (PROCESS_STATUS.PROCESSED);
 				}
-				else {
-					return(PROCESS_STATUS.PROCESSED);
-				}
-			}	
+			}
 		} catch (SQLException e) {
 			// Fallthrough
 		}
@@ -162,12 +160,25 @@ public class SQLVideoDAO implements IVideoDAO {
 			stm = conn.prepareStatement("SELECT * from videos WHERE userid = ?");
 			stm.setString(1, userid);
 			ResultSet result = stm.executeQuery();
-			while(result.next()) {
+			while (result.next()) {
 				list.add(createVideo(result).get());
 			}
-		} 
-		catch (SQLException e) {}
+		} catch (SQLException e) {
+		}
 		return list;
+	}
+
+	@Override
+	public void removeVideoWithId(String id) {
+		System.out.println("Morango");
+		PreparedStatement stm;
+		try {
+			stm = conn.prepareStatement("DELETE from videos WHERE id = ?");
+			stm.setString(1, id);
+			stm.executeUpdate();
+		} catch (SQLException e) {
+		}
+		
 	}
 
 }

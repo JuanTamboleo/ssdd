@@ -1,7 +1,11 @@
 package es.um.sisdist.videofaces.backend.facedetect;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import org.openimaj.image.FImage;
@@ -24,67 +28,77 @@ import org.openimaj.video.xuggle.XuggleVideo;
  * OpenIMAJ Hello world!
  *
  */
-public class VideoFaces
-{
-    public static void main(String[] args) throws IOException
-    {
-        // VideoCapture vc = new VideoCapture( 320, 240 );
-        // VideoDisplay<MBFImage> video = VideoDisplay.createVideoDisplay( vc );
-        Video<MBFImage> video = new XuggleVideo(
-                new File(args.length == 0
-                        ? "videos/face-demographics-walking-and-pause.mp4"
-                        : args[0]));
-        VideoDisplay<MBFImage> vd = VideoDisplay.createOffscreenVideoDisplay(video);
+public class VideoFaces implements Runnable {
+	private InputStream inputStream;
 
-        // El Thread de procesamiento de vídeo se termina al terminar el vídeo.
-        vd.setEndAction(EndAction.CLOSE_AT_END);
+	public VideoFaces(InputStream inputStream) {
+		this.inputStream = inputStream;
+	}
 
-        vd.addVideoListener(new VideoDisplayListener<MBFImage>() {
-            // Número de imagen
-            int imgn = 0;
+	@Override
+	public void run() {
+		// VideoCapture vc = new VideoCapture( 320, 240 );
+		// VideoDisplay<MBFImage> video = VideoDisplay.createVideoDisplay( vc );
 
-            @Override
-            public void beforeUpdate(MBFImage frame)
-            {
-                FaceDetector<DetectedFace, FImage> fd = new HaarCascadeDetector(40);
-                List<DetectedFace> faces = fd.detectFaces(Transforms.calculateIntensity(frame));
+		String path = "videos/a.mp4";
+		File file = new File(path);
+		try {
+			Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e2) {
+			e2.printStackTrace();
+		}
 
-                for (DetectedFace face : faces)
-                {
-                    frame.drawShape(face.getBounds(), RGBColour.RED);
-                    try
-                    {
-                        // También permite enviar la imagen a un OutputStream
-                        ImageUtilities.write(frame.extractROI(face.getBounds()),
-                                new File(String.format("/tmp/img%05d.jpg", imgn++)));
-                    } catch (IOException e)
-                    {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                    System.out.println("!");
-                }
-            }
+		Video<MBFImage> video = new XuggleVideo(path);
+		VideoDisplay<MBFImage> vd = VideoDisplay.createOffscreenVideoDisplay(video);
+//		try {
+//			System.out.println(inputStream.readAllBytes().length);
+//		} catch (IOException e1) {
+//			e1.printStackTrace();
+//		}
+		// El Thread de procesamiento de vídeo se termina al terminar el vídeo.
+		vd.setEndAction(EndAction.CLOSE_AT_END);
 
-            @Override
-            public void afterUpdate(VideoDisplay<MBFImage> display)
-            {
-            }
-        });
+		vd.addVideoListener(new VideoDisplayListener<MBFImage>() {
+			// Número de imagen
+			int imgn = 0;
 
-        vd.addVideoPositionListener(new VideoPositionListener() {
-            @Override
-            public void videoAtStart(VideoDisplay<? extends Image<?, ?>> vd)
-            {
-            }
+			@Override
+			public void beforeUpdate(MBFImage frame) {
+				FaceDetector<DetectedFace, FImage> fd = new HaarCascadeDetector(40);
+				List<DetectedFace> faces = fd.detectFaces(Transforms.calculateIntensity(frame));
 
-            @Override
-            public void videoAtEnd(VideoDisplay<? extends Image<?, ?>> vd)
-            {
-                System.out.println("End of video");
-            }
-        });
+				for (DetectedFace face : faces) {
+					frame.drawShape(face.getBounds(), RGBColour.RED);
+					try {
+						// También permite enviar la imagen a un OutputStream
+						ImageUtilities.write(frame.extractROI(face.getBounds()),
+								new File(String.format("videos/tmp/img%05d.jpg", imgn++)));
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					System.out.println("!");
+				}
+			}
 
-        System.out.println("Fin.");
-    }
+			@Override
+			public void afterUpdate(VideoDisplay<MBFImage> display) {
+			}
+		});
+
+		vd.addVideoPositionListener(new VideoPositionListener() {
+			@Override
+			public void videoAtStart(VideoDisplay<? extends Image<?, ?>> vd) {
+			}
+
+			@Override
+			public void videoAtEnd(VideoDisplay<? extends Image<?, ?>> vd) {
+				System.out.println("End of video");
+				file.delete();
+			}
+		});
+
+		System.out.println("Fin.");
+
+	}
 }

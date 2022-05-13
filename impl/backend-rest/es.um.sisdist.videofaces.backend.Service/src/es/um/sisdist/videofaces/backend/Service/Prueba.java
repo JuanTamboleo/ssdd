@@ -52,14 +52,12 @@ public class Prueba {
 			System.out.println("----------\nUSUARIO YA CREADO\n---------");
 			return Response.status(Status.FORBIDDEN).build();
 		} else {
-			impl.register(uo.getEmail(), uo.getName(), uo.getPassword());
-//			Optional<User> ou = impl.register(uo.getEmail(), uo.getName(), uo.getPassword());
-//			System.out.println(ou.get().getEmail() + " - " + ou.get().getName() + " - " + ou.get().getPassword_hash()
-//					+ " - " + ou.get().getId());
-//			JsonObject value = Json.createObjectBuilder().add("id", ou.get().getId()).add("name", ou.get().getName())
-//					.add("email", ou.get().getEmail()).add("password", ou.get().getPassword_hash()).build();
-			System.out.println("Maracanto");
-			return Response.status(Status.CREATED).build();
+			Optional<User> ou = impl.register(uo.getEmail(), uo.getName(), uo.getPassword());
+			System.out.println(ou.get().getEmail() + " - " + ou.get().getName() + " - " + ou.get().getPassword_hash()
+					+ " - " + ou.get().getId());
+			JsonObject value = Json.createObjectBuilder().add("id", ou.get().getId()).add("name", ou.get().getName())
+					.add("email", ou.get().getEmail()).add("password", ou.get().getPassword_hash()).build();
+			return Response.ok(value).status(Status.CREATED).build();
 		}
 	}
 

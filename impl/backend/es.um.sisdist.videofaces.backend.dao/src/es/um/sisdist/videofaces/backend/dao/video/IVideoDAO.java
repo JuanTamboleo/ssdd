@@ -18,4 +18,6 @@ public interface IVideoDAO
     public Optional<Video> addVideo(String userid, String filename, byte[] videodata);
     
     public List<Video> getVideosFromUser(String userid);
+    
+    public void removeVideoWithId(String id);
 }

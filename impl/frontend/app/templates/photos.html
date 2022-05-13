@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% for image in images %}
+ <img src="{{url_for ('send_image', filename = image)}}" height="200" width="200"/>
+{% endfor %}
+
+{% endblock %}
