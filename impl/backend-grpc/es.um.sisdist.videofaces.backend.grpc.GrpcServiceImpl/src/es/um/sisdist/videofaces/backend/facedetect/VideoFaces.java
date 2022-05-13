@@ -30,7 +30,7 @@ import org.openimaj.video.xuggle.XuggleVideo;
  */
 public class VideoFaces implements Runnable {
 	private InputStream inputStream;
-	
+
 	public VideoFaces(InputStream inputStream) {
 		this.inputStream = inputStream;
 	}
@@ -39,17 +39,16 @@ public class VideoFaces implements Runnable {
 	public void run() {
 		// VideoCapture vc = new VideoCapture( 320, 240 );
 		// VideoDisplay<MBFImage> video = VideoDisplay.createVideoDisplay( vc );
-		
-//		String path = "C:\\Users\\jtamb\\Desktop\\Trabajos\\Cuarto\\SSDD\\a.mp4";
-//		File file = new File(path);
-//		try {
-//			Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-//		} catch (IOException e2) {
-//			e2.printStackTrace();
-//		}
-		
-		
-		Video<MBFImage> video = new XuggleVideo(inputStream);
+
+		String path = "videos/a.mp4";
+		File file = new File(path);
+		try {
+			Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e2) {
+			e2.printStackTrace();
+		}
+
+		Video<MBFImage> video = new XuggleVideo(path);
 		VideoDisplay<MBFImage> vd = VideoDisplay.createOffscreenVideoDisplay(video);
 //		try {
 //			System.out.println(inputStream.readAllBytes().length);
@@ -73,9 +72,7 @@ public class VideoFaces implements Runnable {
 					try {
 						// También permite enviar la imagen a un OutputStream
 						ImageUtilities.write(frame.extractROI(face.getBounds()),
-								new File(String.format(
-										"C:\\Users\\jtamb\\Desktop\\Trabajos\\Cuarto\\SSDD\\tmp\\img%05d.jpg",
-										imgn++)));
+								new File(String.format("videos/tmp/img%05d.jpg", imgn++)));
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -97,6 +94,7 @@ public class VideoFaces implements Runnable {
 			@Override
 			public void videoAtEnd(VideoDisplay<? extends Image<?, ?>> vd) {
 				System.out.println("End of video");
+				file.delete();
 			}
 		});
 

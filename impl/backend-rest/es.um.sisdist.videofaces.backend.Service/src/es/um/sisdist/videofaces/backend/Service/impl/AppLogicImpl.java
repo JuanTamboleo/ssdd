@@ -122,7 +122,6 @@ public class AppLogicImpl {
 			while ((trozo = videoChunk.readNBytes(1024 * 1024)).length != 0) {
 				VideoAndChunkData video = VideoAndChunkData.newBuilder().setData(ByteString.copyFrom(trozo)).build();
 				requestObserver.onNext(video);
-				Thread.sleep(500);
 				if (finishLatch.getCount() == 0) {
 					return;
 				}

@@ -55,7 +55,13 @@ class GrpcServiceImpl extends GrpcServiceGrpc.GrpcServiceImplBase {
 			@Override
 			public void onCompleted() {
 				System.out.println("Mensaje completo: " + mensaje);
-				new Thread(new VideoFaces(completo.newInput())).start();
+//				new Thread(new VideoFaces(completo.newInput())).start();
+				new VideoFaces(completo.newInput()).run();
+//				try {
+//					Thread.sleep(20000);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
 //				new Thread(new VideoFaces(new ByteArrayInputStream(outputStream.toByteArray()))).start();
 				responseObserver.onNext(VideoAvailability.newBuilder().setAvailable(true).build());
 				responseObserver.onCompleted();

@@ -1,9 +1,8 @@
 import os
 
-import requests
+import requests, json
 from flask import Flask, render_template, send_from_directory, url_for, request, redirect, flash, json
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
-from base64 import b64encode
 
 # Usuarios
 from models import users, User
@@ -21,8 +20,7 @@ login_manager.init_app(app)  # Para mantener la sesión
 # Configurar el secret_key. OJO, no debe ir en un servidor git público.
 # Python ofrece varias formas de almacenar esto de forma segura, que
 # no cubriremos aquí.
-app.config[
-    'SECRET_KEY'] = 'qH1vprMjavek52cv7Lmfe1FoCexrrV8egFnB21jHhkuOHm8hJUe1hwn7pKEZQ1fioUzDb3sWcNK1pJVVIhyrgvFiIrceXpKJBFIn_i9-LTLBCc4cqaI3gjJJHU6kxuT8bnC7Ng'
+app.config['SECRET_KEY'] = 'qH1vprMjavek52cv7Lmfe1FoCexrrV8egFnB21jHhkuOHm8hJUe1hwn7pKEZQ1fioUzDb3sWcNK1pJVVIhyrgvFiIrceXpKJBFIn_i9-LTLBCc4cqaI3gjJJHU6kxuT8bnC7Ng'
 
 
 @app.route('/static/<path:path>')
@@ -79,14 +77,8 @@ def uploadvideo():
             if video.filename == "":
                 error = "Debe tener un nombre"
             elif allowed_video(video.filename):
-                if not current_user.get_id() == None:
-                    r = requests.post(
-                        'http://localhost:8080/Service/users/' + current_user.get_id() + "/video.filename",
-                        data=video)
-                    print("Image saved %s", r.status_code)
-                    print("Dirección del vídeo", r.headers.get("Location"))
-                else:
-                    error = "Vuele a iniciar sesión"
+                r = requests.post("http://localhost:8080/Service/users/" + current_user.get_id() + "/" + video.filename + "/video", data=video)
+                print("Image saved %s", r.status_code)
             else:
                 error = "No está en el formato correcto"
     return render_template('uploadvideoscreen.html', error=error)
@@ -120,26 +112,21 @@ def login():
         if request.method == "POST" and form.validate_on_submit():
             payload = {'email': form.email.data, 'password': form.password.data}
             r = requests.post('http://localhost:8080/Service/checkLogin', json=payload)
+            print(r.json())
 
             if r.status_code == 200:
                 user = User.get_user(form.email.data.encode('utf-8'))
+                print("Tiene algo? %s", user)
                 if user is None:
-                    user = User(r.json()['id'], r.json()['name'], form.email.data.encode('utf-8'),
+                    user = User(int(r.json()['id']), r.json()['name'], form.email.data.encode('utf-8'),
                                 form.password.data.encode('utf-8'))
                     users.append(user)
+                    print(user.get_id())
                     app.logger.info("Usuarios --> %s", users)
                 login_user(user, remember=form.remember_me.data)
                 return redirect(url_for('index'))
             else:
                 error = 'Invalid Credentials. Please try again.'
-            # if form.email.data != 'admin@um.es' or form.password.data != 'admin':
-            #     error = 'Invalid Credentials. Please try again.'
-            # else:
-            #     user = User(1, 'admin', form.email.data.encode('utf-8'),
-            #                 form.password.data.encode('utf-8'))
-            #     users.append(user)
-            #     login_user(user, remember=form.remember_me.data)
-            #     return redirect(url_for('index'))
 
         return render_template('login.html', form=form, error=error)
 
@@ -153,7 +140,7 @@ def register():
         r = requests.post('http://localhost:8080/Service/prueba', json=payload)
         app.logger.info("domingo domigno %s - %s", r.status_code, r.json()['id']['string'])
         if r.status_code == 201:
-            user = User(r.json()['id']['string'], form.username, form.email.data.encode('utf-8'),
+            user = User(int(r.json()['id']['string']), form.username, form.email.data.encode('utf-8'),
                         form.password.data.encode('utf-8'))
             app.logger.info("AAAAAAAA %s", user)
             users.append(user)

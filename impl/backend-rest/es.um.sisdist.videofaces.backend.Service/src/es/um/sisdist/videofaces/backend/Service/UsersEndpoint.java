@@ -73,10 +73,11 @@ public class UsersEndpoint {
 //	}
 
 	@POST
-	@Path("/{id}/video")
+	@Path("/{id}/{filename}/video")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response addVideo(@PathParam("id") String userid, InputStream inputStream) {
+	public Response addVideo(@PathParam("id") String userid, @PathParam("filename") String filename,
+			InputStream inputStream) {
 		System.out.println("Video recibido");
 		try {
 			byte[] videodata = inputStream.readAllBytes();
@@ -86,7 +87,7 @@ public class UsersEndpoint {
 				System.out.println(userid);
 			}
 
-			Optional<Video> v = impl.saveVideo(userid, "Prueba", videodata);
+			Optional<Video> v = impl.saveVideo(userid, filename, videodata);
 			if (v == null || !v.isPresent()) {
 				System.out.println("Una desgracia");
 			} else {
@@ -97,8 +98,8 @@ public class UsersEndpoint {
 			impl.variosIDs(userid, new ByteArrayInputStream(videodata));
 
 			// Respuesta
-			return Response.status(Response.Status.CREATED)
-					.header("Location", "/users/" + userid + "/video/" + v.get().getId()).build();
+			return Response.status(Response.Status.CREATED).header("Location", "/users/" + userid + "/video/" + 10)
+					.build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.BAD_REQUEST).build();
@@ -124,7 +125,11 @@ public class UsersEndpoint {
 		for (Video vi : videos) {
 			json = json + "{\"filename\": \"" + vi.getFilename() + "\",\"id\": \"" + vi.getId() + "\"},";
 		}
-		json = json.substring(0, json.length() - 1) + "]";
+		if (json.length() > 1) {
+			json = json.substring(0, json.length() - 1);
+		}
+
+		json = json + "]";
 
 		System.out.println("Vídeos: " + json);
 
