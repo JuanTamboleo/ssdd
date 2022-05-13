@@ -3,6 +3,8 @@
  */
 package es.um.sisdist.videofaces.backend.dao;
 
+import es.um.sisdist.videofaces.backend.dao.photo.IPhotoDao;
+import es.um.sisdist.videofaces.backend.dao.photo.SQLPhotoDAO;
 import es.um.sisdist.videofaces.backend.dao.user.IUserDAO;
 import es.um.sisdist.videofaces.backend.dao.user.SQLUserDAO;
 import es.um.sisdist.videofaces.backend.dao.video.IVideoDAO;
@@ -23,6 +25,11 @@ public class DAOFactoryImpl implements IDAOFactory
 	@Override
 	public IVideoDAO createSQLVideoDAO() {
 		return new SQLVideoDAO();
+	}
+
+	@Override
+	public SQLPhotoDAO createSQLPhotoDao() {
+		return new SQLPhotoDAO();
 	}
 
 }

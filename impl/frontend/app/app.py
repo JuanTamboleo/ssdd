@@ -1,3 +1,5 @@
+import os
+
 import requests
 from flask import Flask, render_template, send_from_directory, url_for, request, redirect, flash, json
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
@@ -56,6 +58,7 @@ def allowed_video(filename):
 
 
 @app.route('/uploadvideo', methods=['GET', 'POST'])
+@login_required
 def uploadvideo():
     error = None
     if request.method == "POST":
@@ -156,6 +159,17 @@ def profile():
     return render_template('profile.html', id=r.json()['id']['string'], email=r.json()['email']['string'],
                            token=r.json()['TOKEN']['string'], name=r.json()['name']['string'],
                            visits=r.json()['visits']['string'], videos=r.json()['videos']['string'])
+
+
+@app.route('/photos', methods=['GET'])
+def photos():
+    images = os.listdir('./static/images')
+    return render_template('photos.html', images=images)
+
+
+@app.route('/photos/<filename>')
+def send_image(filename):
+    return send_from_directory("static/images", filename)
 
 
 @app.route('/logout')
