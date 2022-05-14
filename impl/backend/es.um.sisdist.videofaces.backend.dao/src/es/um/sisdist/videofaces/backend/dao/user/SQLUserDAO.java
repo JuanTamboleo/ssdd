@@ -93,17 +93,17 @@ public class SQLUserDAO implements IUserDAO {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public Integer getVideos(String id) {
 		PreparedStatement stm;
 		try {
 			stm = conn.prepareStatement("SELECT count(*) from videos WHERE userid = ?");
 			stm.setString(1, id);
 			ResultSet result = stm.executeQuery();
-			if(result.next()) {
+			if (result.next()) {
 				return result.getInt(1);
 			}
-		}catch (SQLException e) {
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return null;
@@ -158,24 +158,16 @@ public class SQLUserDAO implements IUserDAO {
 		Statement st;
 		try {
 			st = conn.createStatement();
-
 			ResultSet rs = st.executeQuery("select * from users");
 			ResultSetMetaData rsmd = rs.getMetaData();
-
 			int columnsNumber = rsmd.getColumnCount();
-
 			// Iterate through the data in the result set and display it.
-
 			while (rs.next()) {
 				// Print one row
 				for (int i = 1; i <= columnsNumber; i++) {
-
 					System.out.print(rs.getString(i) + " "); // Print one element of a row
-
 				}
-
 				System.out.println();// Move to the next line to print the next row.
-
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

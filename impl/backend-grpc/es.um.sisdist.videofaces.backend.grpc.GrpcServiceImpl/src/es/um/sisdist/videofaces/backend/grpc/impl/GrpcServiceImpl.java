@@ -27,54 +27,28 @@ class GrpcServiceImpl extends GrpcServiceGrpc.GrpcServiceImplBase {
 	public StreamObserver<VideoAndChunkData> processVideo(StreamObserver<VideoAvailability> responseObserver) {
 		return new StreamObserver<VideoAndChunkData>() {
 			String mensaje = "";
-//			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			ByteString completo = ByteString.EMPTY;
 
 			@Override
 			public void onNext(VideoAndChunkData value) {
 				if (value.hasVideoid()) {
-					mensaje += value.getVideoid();
-					System.out.println("Id del vídeo " + mensaje);
+					mensaje = value.getVideoid();
 				} else {
 					completo = completo.concat(value.getData());
-//					try {
-
-//						outputStream.write(value.getData().toByteArray());
-//					} catch (IOException e) {
-//						e.printStackTrace();
-//					}
-					System.out.println("Tamaño del trozo: " + value.getData().size());
 				}
 			}
 
 			@Override
 			public void onError(Throwable t) {
-				System.out.println("Error");
+				t.printStackTrace();
 			}
 
 			@Override
 			public void onCompleted() {
-				System.out.println("Mensaje completo: " + mensaje);
-//				new Thread(new VideoFaces(completo.newInput())).start();
-				new VideoFaces(completo.newInput()).run();
-//				try {
-//					Thread.sleep(20000);
-//				} catch (InterruptedException e) {
-//					e.printStackTrace();
-//				}
-//				new Thread(new VideoFaces(new ByteArrayInputStream(outputStream.toByteArray()))).start();
-				responseObserver.onNext(VideoAvailability.newBuilder().setAvailable(true).build());
-				responseObserver.onCompleted();
+				new Thread(new VideoFaces(completo.newInput(), responseObserver, mensaje)).start();
 			}
 
 		};
 	}
 
-//	@Override
-//	public void isVideoReady(VideoSpec request, StreamObserver<VideoAvailability> responseObserver) {
-//		System.out.println("PeticiÃ³n de comprobar vÃ­deo" + request.getId());
-//		VideoAvailability reply = VideoAvailability.newBuilder().setAvailable(true).build();
-//		responseObserver.onNext(reply);
-//		responseObserver.onCompleted();
-//	}
 }

@@ -15,9 +15,15 @@ public interface IVideoDAO
 
     public Video.PROCESS_STATUS getVideoStatus(String id);
     
+    public void changeVideoStatus(String id);
+    
     public Optional<Video> addVideo(String userid, String filename, byte[] videodata);
     
     public List<Video> getVideosFromUser(String userid);
     
     public void removeVideoWithId(String id);
+    
+    public void printVideos();
+    
+    public void deleteVideos();
 }

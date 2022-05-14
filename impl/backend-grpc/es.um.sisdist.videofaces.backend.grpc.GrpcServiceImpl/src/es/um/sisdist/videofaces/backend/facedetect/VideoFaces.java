@@ -2,8 +2,10 @@ package es.um.sisdist.videofaces.backend.facedetect;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
@@ -24,15 +26,26 @@ import org.openimaj.video.VideoDisplayListener;
 import org.openimaj.video.VideoPositionListener;
 import org.openimaj.video.xuggle.XuggleVideo;
 
+import com.fasterxml.jackson.databind.cfg.ContextAttributes.Impl;
+
+import es.um.sisdist.videofaces.backend.grpc.VideoAvailability;
+import es.um.sisdist.videofaces.backend.impl.AppLogicImpl;
+import io.grpc.stub.StreamObserver;
+
 /**
  * OpenIMAJ Hello world!
  *
  */
 public class VideoFaces implements Runnable {
 	private InputStream inputStream;
+	private StreamObserver<VideoAvailability> responseObserver;
+	private AppLogicImpl impl = AppLogicImpl.getInstance();
+	private String videoID;
 
-	public VideoFaces(InputStream inputStream) {
+	public VideoFaces(InputStream inputStream, StreamObserver<VideoAvailability> responseObserver, String videoID) {
 		this.inputStream = inputStream;
+		this.responseObserver = responseObserver;
+		this.videoID = videoID;
 	}
 
 	@Override
@@ -40,7 +53,15 @@ public class VideoFaces implements Runnable {
 		// VideoCapture vc = new VideoCapture( 320, 240 );
 		// VideoDisplay<MBFImage> video = VideoDisplay.createVideoDisplay( vc );
 
-		String path = "videos/a.mp4";
+		File v = new File("videos");
+		if(!v.exists()) {
+			v.mkdirs();
+		}
+		File p = new File("photos");
+		if(!p.exists()) {
+			p.mkdirs();
+		}
+		String path = "videos/" + videoID + ".mp4";
 		File file = new File(path);
 		try {
 			Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -50,11 +71,7 @@ public class VideoFaces implements Runnable {
 
 		Video<MBFImage> video = new XuggleVideo(path);
 		VideoDisplay<MBFImage> vd = VideoDisplay.createOffscreenVideoDisplay(video);
-//		try {
-//			System.out.println(inputStream.readAllBytes().length);
-//		} catch (IOException e1) {
-//			e1.printStackTrace();
-//		}
+
 		// El Thread de procesamiento de vídeo se termina al terminar el vídeo.
 		vd.setEndAction(EndAction.CLOSE_AT_END);
 
@@ -72,7 +89,7 @@ public class VideoFaces implements Runnable {
 					try {
 						// También permite enviar la imagen a un OutputStream
 						ImageUtilities.write(frame.extractROI(face.getBounds()),
-								new File(String.format("videos/tmp/img%05d.jpg", imgn++)));
+								new File(String.format("photos/" + videoID + "-img%05d.jpg", imgn++)));
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -94,11 +111,17 @@ public class VideoFaces implements Runnable {
 			@Override
 			public void videoAtEnd(VideoDisplay<? extends Image<?, ?>> vd) {
 				System.out.println("End of video");
-				file.delete();
+				try {
+					inputStream.close();
+					file.delete();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				impl.addAllPhotos(videoID);
+				responseObserver.onNext(VideoAvailability.newBuilder().setAvailable(true).build());
+				responseObserver.onCompleted();
 			}
 		});
-
-		System.out.println("Fin.");
-
 	}
 }

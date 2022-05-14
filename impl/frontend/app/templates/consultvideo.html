@@ -12,33 +12,36 @@
 
 <table id="informacion" class="table table-stripped">
     <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Fecha</th>
-            <th>Status</th>
-        </tr>
+    <tr>
+        <th>Nombre</th>
+        <th>Fecha</th>
+        <th>Status</th>
+    </tr>
     </thead>
     <tbody>
-        <tr>
-            <td>{{ video.filename }}</td>
-            <td>{{ video.date }}</td>
-            <td>{{ video.status }}</td>
-        </tr>
+    <tr>
+        <td>{{ video.filename }}</td>
+        <td>{{ video.date }}</td>
+        <td>{{ video.status }}</td>
+    </tr>
     </tbody>
 </table>
 
-<button type="button" onclick="location.href='removevideo/{{ video.id }}'" >Borrar vídeo</button> 
+<button type="button" onclick="location.href='removevideo/{{ video.id }}'">Borrar vídeo</button>
 
 <div class="row">
     <div class="col">
         <br>
         <h1>Imágenes: </h1>
         <hr>
+        {% for image in images %}
+        <img src="{{url_for ('send_image', filename = image)}}" height="200" width="200"/>
+        {% endfor %}
     </div>
 </div>
 
 {% for image in images %}
- <img src="{{url_for ('send_image', filename = image)}}" height="200" width="200"/>
+<img src="{{url_for ('send_image', filename = image)}}" height="200" width="200"/>
 {% endfor %}
 
 
