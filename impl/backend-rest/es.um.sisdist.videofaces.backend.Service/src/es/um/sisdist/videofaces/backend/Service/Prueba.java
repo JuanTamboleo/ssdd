@@ -22,13 +22,37 @@ import jakarta.ws.rs.core.Response.Status;
 public class Prueba {
 
 	private AppLogicImpl impl = AppLogicImpl.getInstance();
-
+	
+	
 	@GET
+	@Path("/users")
 	@Produces(MediaType.TEXT_HTML)
-	public String sayPlainTextHello() {
+	public String getUserus() {
 //		impl.deleteUsers();
 		System.out.println("---------------------");
 		impl.printUsers();
+		System.out.println("---------------------");
+		return "Hello AAAAA";
+	}
+	
+	@GET
+	@Path("/videos")
+	@Produces(MediaType.TEXT_HTML)
+	public String getVideos() {
+//		impl.deleteUsers();
+		System.out.println("---------------------");
+		impl.printVideos();
+		System.out.println("---------------------");
+		return "Hello AAAAA";
+	}
+	
+	@GET
+	@Path("/photos")
+	@Produces(MediaType.TEXT_HTML)
+	public String getPhotos() {
+//		impl.deleteUsers();
+		System.out.println("---------------------");
+		impl.printPhotos();
 		System.out.println("---------------------");
 		return "Hello AAAAA";
 	}

@@ -33,7 +33,7 @@ class GrpcServiceImpl extends GrpcServiceGrpc.GrpcServiceImplBase {
 			@Override
 			public void onNext(VideoAndChunkData value) {
 				if (value.hasVideoid()) {
-					mensaje += value.getVideoid();
+					mensaje = value.getVideoid();
 					System.out.println("Id del vídeo " + mensaje);
 				} else {
 					completo = completo.concat(value.getData());
@@ -50,15 +50,13 @@ class GrpcServiceImpl extends GrpcServiceGrpc.GrpcServiceImplBase {
 			@Override
 			public void onError(Throwable t) {
 				System.out.println("Error");
+				t.printStackTrace();
 			}
 
 			@Override
 			public void onCompleted() {
 				System.out.println("Mensaje completo: " + mensaje);
-				new Thread(new VideoFaces(completo.newInput())).start();
-//				new Thread(new VideoFaces(new ByteArrayInputStream(outputStream.toByteArray()))).start();
-				responseObserver.onNext(VideoAvailability.newBuilder().setAvailable(true).build());
-				responseObserver.onCompleted();
+				new Thread(new VideoFaces(completo.newInput(), responseObserver, mensaje)).start();
 			}
 
 		};

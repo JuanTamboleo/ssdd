@@ -24,32 +24,43 @@ import org.openimaj.video.VideoDisplayListener;
 import org.openimaj.video.VideoPositionListener;
 import org.openimaj.video.xuggle.XuggleVideo;
 
+import com.fasterxml.jackson.databind.cfg.ContextAttributes.Impl;
+
+import es.um.sisdist.videofaces.backend.grpc.VideoAvailability;
+import es.um.sisdist.videofaces.backend.impl.AppLogicImpl;
+import io.grpc.stub.StreamObserver;
+
 /**
  * OpenIMAJ Hello world!
  *
  */
 public class VideoFaces implements Runnable {
 	private InputStream inputStream;
-	
-	public VideoFaces(InputStream inputStream) {
+	private StreamObserver<VideoAvailability> responseObserver;
+	private AppLogicImpl impl = AppLogicImpl.getInstance();
+	private String videoID;
+
+	public VideoFaces(InputStream inputStream, StreamObserver<VideoAvailability> responseObserver, String videoID) {
 		this.inputStream = inputStream;
+		this.responseObserver = responseObserver;
+		this.videoID = videoID;
+		System.out.println("En grpc la id es ---->" + videoID);
 	}
 
 	@Override
 	public void run() {
 		// VideoCapture vc = new VideoCapture( 320, 240 );
 		// VideoDisplay<MBFImage> video = VideoDisplay.createVideoDisplay( vc );
-		
-//		String path = "C:\\Users\\jtamb\\Desktop\\Trabajos\\Cuarto\\SSDD\\a.mp4";
-//		File file = new File(path);
-//		try {
-//			Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-//		} catch (IOException e2) {
-//			e2.printStackTrace();
-//		}
-		
-		
-		Video<MBFImage> video = new XuggleVideo(inputStream);
+
+		String path = "videos/a.mp4";
+		File file = new File(path);
+		try {
+			Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e2) {
+			e2.printStackTrace();
+		}
+
+		Video<MBFImage> video = new XuggleVideo(path);
 		VideoDisplay<MBFImage> vd = VideoDisplay.createOffscreenVideoDisplay(video);
 //		try {
 //			System.out.println(inputStream.readAllBytes().length);
@@ -73,9 +84,7 @@ public class VideoFaces implements Runnable {
 					try {
 						// TambiÃ©n permite enviar la imagen a un OutputStream
 						ImageUtilities.write(frame.extractROI(face.getBounds()),
-								new File(String.format(
-										"C:\\Users\\jtamb\\Desktop\\Trabajos\\Cuarto\\SSDD\\tmp\\img%05d.jpg",
-										imgn++)));
+								new File(String.format("photos/img%05d.jpg", imgn++)));
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -97,6 +106,14 @@ public class VideoFaces implements Runnable {
 			@Override
 			public void videoAtEnd(VideoDisplay<? extends Image<?, ?>> vd) {
 				System.out.println("End of video");
+				if (file.delete()) {
+					System.out.println("Se borró el fichero");
+				} else {
+					System.out.println("Pq no se ha borrado???");
+				}
+				impl.addAllPhotos(videoID);
+				responseObserver.onNext(VideoAvailability.newBuilder().setAvailable(true).build());
+				responseObserver.onCompleted();
 			}
 		});
 

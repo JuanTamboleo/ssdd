@@ -61,11 +61,19 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="uploadvideo">Subir un vídeo</a>
+                        <a class="nav-link" href="{{ url_for("logout") }}">Logout</a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for("logout") }}">Logout</a>
+                        <a class="nav-link" href="{{ url_for("consultvideos") }}">Consultar mis vídeos</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for("photos") }}">Galería</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for("uploadvideo") }}">Subir un vídeo</a>
                     </li>
 
                     {% else %}
@@ -76,9 +84,6 @@
                         <a class="nav-link" href="{{ url_for("login") }}">Inicio de sesión</a>
                     </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link" href="photos">Galería</a>
-                    </li>
 
                     {% endif %}
 

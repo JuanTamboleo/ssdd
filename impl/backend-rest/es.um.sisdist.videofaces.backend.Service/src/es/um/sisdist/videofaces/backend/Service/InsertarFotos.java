@@ -11,14 +11,27 @@ public class InsertarFotos {
 
 	public static void main(String[] args) throws IOException {
 		AppLogicImpl impl = AppLogicImpl.getInstance();
-
-		String path = "C:\\Users\\jtamb\\Desktop\\Trabajos\\Cuarto\\SSDD\\ssdd-cambiosGrpc0.1\\impl\\backend-grpc\\es.um.sisdist.videofaces.backend.grpc.GrpcServiceImpl\\videos\\tmp\\";
-		for (int i = 10; i < 100; i++) {
-			File file = new File(path+"img000"+i+".jpg");
-			byte[] photodata = Files.readAllBytes(file.toPath());
-			impl.savePhoto("1", photodata);
-		}
-
+		impl.deletePhotos();
+		impl.deleteVideos();
+		
+		File folder = new File("photos");
+//		File[] listOfFiles = folder.listFiles();
+//
+//		for (int i = 0; i < listOfFiles.length; i++) {
+//			if (listOfFiles[i].isFile()) {
+//				byte[] photodata;
+//				try {
+//					photodata = Files.readAllBytes(listOfFiles[i].toPath());
+//					impl.savePhoto("0", photodata);
+////					listOfFiles[i].delete();
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+		
+		impl.printPhotos();
+		impl.printVideos();
 	}
 
 }

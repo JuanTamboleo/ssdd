@@ -3,8 +3,11 @@
  */
 package es.um.sisdist.videofaces.backend.Service.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -15,8 +18,10 @@ import com.google.protobuf.Empty;
 
 import es.um.sisdist.videofaces.backend.dao.DAOFactoryImpl;
 import es.um.sisdist.videofaces.backend.dao.IDAOFactory;
+import es.um.sisdist.videofaces.backend.dao.models.Photo;
 import es.um.sisdist.videofaces.backend.dao.models.User;
 import es.um.sisdist.videofaces.backend.dao.models.Video;
+import es.um.sisdist.videofaces.backend.dao.photo.IPhotoDao;
 import es.um.sisdist.videofaces.backend.dao.user.IUserDAO;
 import es.um.sisdist.videofaces.backend.dao.video.IVideoDAO;
 import es.um.sisdist.videofaces.backend.grpc.*;
@@ -34,6 +39,7 @@ public class AppLogicImpl {
 	IDAOFactory daoFactory;
 	IUserDAO dao;
 	IVideoDAO videodao;
+	IPhotoDao photodao;
 
 	private static final Logger logger = Logger.getLogger(AppLogicImpl.class.getName());
 
@@ -47,6 +53,7 @@ public class AppLogicImpl {
 		daoFactory = new DAOFactoryImpl();
 		dao = daoFactory.createSQLUserDAO();
 		videodao = daoFactory.createSQLVideoDAO();
+		photodao = daoFactory.createSQLPhotoDao();
 
 		Optional<String> grpcServerName = Optional.ofNullable(System.getenv("GRPC_SERVER"));
 		Optional<String> grpcServerPort = Optional.ofNullable(System.getenv("GRPC_SERVER_PORT"));
@@ -91,11 +98,13 @@ public class AppLogicImpl {
 			@Override
 			public void onNext(VideoAvailability value) {
 				System.out.println("Cliente onNext: " + value);
+				videodao.changeVideoStatus(VideoID);
 			}
 
 			@Override
 			public void onError(Throwable t) {
 				System.out.println("Cliente error");
+				t.printStackTrace();
 				finishLatch.countDown();
 
 			}
@@ -110,7 +119,7 @@ public class AppLogicImpl {
 		StreamObserver<VideoAndChunkData> requestObserver = asyncStub.processVideo(responseObserver);
 
 		try {
-			VideoAndChunkData id = VideoAndChunkData.newBuilder().setVideoid("VideoID").build();
+			VideoAndChunkData id = VideoAndChunkData.newBuilder().setVideoid(VideoID).build();
 			requestObserver.onNext(id);
 			Thread.sleep(500);
 			if (finishLatch.getCount() == 0) {
@@ -121,7 +130,6 @@ public class AppLogicImpl {
 			while ((trozo = videoChunk.readNBytes(1024 * 1024)).length != 0) {
 				VideoAndChunkData video = VideoAndChunkData.newBuilder().setData(ByteString.copyFrom(trozo)).build();
 				requestObserver.onNext(video);
-				Thread.sleep(500);
 				if (finishLatch.getCount() == 0) {
 					return;
 				}
@@ -152,9 +160,13 @@ public class AppLogicImpl {
 
 		return Optional.empty();
 	}
-	
+
 	public Integer checkVideos(String id) {
 		return dao.getVideos(id);
+	}
+
+	public void removeVideo(String id) {
+		videodao.removeVideoWithId(id);
 	}
 
 	// Registro de usuario
@@ -166,11 +178,40 @@ public class AppLogicImpl {
 		return videodao.addVideo(userid, filename, videodata);
 	}
 
+	public List<Video> getVideosFromUser(String userid) {
+		return videodao.getVideosFromUser(userid);
+	}
+
 	public void deleteUsers() {
 		dao.deleteUsers();
 	}
 
 	public void printUsers() {
 		dao.printUsers();
+	}
+
+	public void printVideos() {
+		videodao.printVideos();
+	}
+
+	public void savePhoto(String vid, byte[] photodata) {
+		photodao.addPhoto(vid, photodata);
+	}
+
+	public void printPhotos() {
+		photodao.printPhotos();
+	}
+
+	public List<Photo> getPhotosFromVideos(String vid) {
+		return photodao.getPhotosFromVideo(vid);
+	}
+
+	public void deletePhotos() {
+		photodao.deletePhotos();
+	}
+
+	public void deleteVideos() {
+		videodao.deleteVideos();
+
 	}
 }

@@ -6,11 +6,15 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 
 import javax.sql.rowset.serial.SerialBlob;
@@ -136,18 +140,93 @@ public class SQLVideoDAO implements IVideoDAO {
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
 			String fecha = dateFormat.format(date);
 			preparedStmt.setString(3, fecha);
-			preparedStmt.setString(4, "Nombre_del_fichero");
+			preparedStmt.setString(4, filename);
 			preparedStmt.setInt(5, 0); // Estatus, 0 para processing, 1 para processing
 
 			Blob blob = new SerialBlob(videodata);
 			preparedStmt.setBlob(6, blob);
 			preparedStmt.execute();
-			return Optional.of(new Video(id, userid, Video.PROCESS_STATUS.PROCESSING, fecha, "Nombre_del_fichero"));
+			return Optional.of(new Video(id, userid, Video.PROCESS_STATUS.PROCESSING, fecha, filename));
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 
 		return Optional.empty();
+	}
+
+	@Override
+	public List<Video> getVideosFromUser(String userid) {
+		List<Video> list = new LinkedList<Video>();
+		PreparedStatement stm;
+		try {
+			stm = conn.prepareStatement("SELECT * from videos WHERE userid = ?");
+			stm.setString(1, userid);
+			ResultSet result = stm.executeQuery();
+			while (result.next()) {
+				list.add(createVideo(result).get());
+			}
+		} catch (SQLException e) {
+		}
+		return list;
+	}
+
+	@Override
+	public void removeVideoWithId(String id) {
+		System.out.println("Morango");
+		PreparedStatement stm;
+		try {
+			stm = conn.prepareStatement("DELETE from videos WHERE id = ?");
+			stm.setString(1, id);
+			stm.executeUpdate();
+		} catch (SQLException e) {
+		}
+
+	}
+
+	@Override
+	public void changeVideoStatus(String id) {
+		PreparedStatement stm;
+		try {
+			stm = conn.prepareStatement("UPDATE videos SET process_status = 1 WHERE id = ?");
+			stm.setString(1, id);
+			stm.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public void printVideos() {
+		Statement st;
+		try {
+			st = conn.createStatement();
+			ResultSet rs = st.executeQuery("select id, userid, date, filename, process_status from videos");
+			ResultSetMetaData rsmd = rs.getMetaData();
+			int columnsNumber = rsmd.getColumnCount();
+			// Iterate through the data in the result set and display it.
+			while (rs.next()) {
+				// Print one row
+				for (int i = 1; i <= columnsNumber; i++) {
+					System.out.print(rs.getString(i) + " "); // Print one element of a row
+				}
+				System.out.println();// Move to the next line to print the next row.
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void deleteVideos() {
+		String query = "delete from videos";
+		PreparedStatement preparedStmt;
+		try {
+			preparedStmt = conn.prepareStatement(query);
+			preparedStmt.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 }

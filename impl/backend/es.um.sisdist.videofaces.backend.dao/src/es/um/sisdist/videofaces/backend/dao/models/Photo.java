@@ -1,17 +1,22 @@
 package es.um.sisdist.videofaces.backend.dao.models;
 
+import java.sql.SQLException;
+
+
 public class Photo {
 	String id;
 	String vid;
+	byte[] data;
 
-	public Photo() {
-
-	}
-
-	public Photo(String id, String vid) {
+	public Photo(String id, String vid, java.sql.Blob blob) {
 		super();
 		this.id = id;
 		this.vid = vid;
+		try {
+			this.data = blob.getBytes(1, (int) blob.length());
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public String getId() {
@@ -30,4 +35,14 @@ public class Photo {
 		this.vid = vid;
 	}
 
+	public byte[] getData() {
+		return data;
+	}
+
+	public void setData(byte[] data) {
+		this.data = data;
+	}
+
+	
+	
 }

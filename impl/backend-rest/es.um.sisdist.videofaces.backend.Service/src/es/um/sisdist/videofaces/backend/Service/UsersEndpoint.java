@@ -1,18 +1,23 @@
 package es.um.sisdist.videofaces.backend.Service;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
 import com.google.protobuf.ByteString;
 
 import es.um.sisdist.videofaces.backend.Service.impl.AppLogicImpl;
+import es.um.sisdist.videofaces.backend.dao.models.Photo;
 import es.um.sisdist.videofaces.backend.dao.models.User;
 import es.um.sisdist.videofaces.backend.dao.models.Video;
+import es.um.sisdist.videofaces.backend.dao.models.Video.PROCESS_STATUS;
 import es.um.sisdist.videofaces.models.UserDTO;
 import es.um.sisdist.videofaces.models.UserDTOUtils;
 import jakarta.json.Json;
@@ -50,14 +55,14 @@ public class UsersEndpoint {
 //	@Consumes(MediaType.MULTIPART_FORM_DATA)
 //	@Produces(MediaType.APPLICATION_JSON)
 //	public Response video(@PathParam("id") String userid, InputStream inputStream) {
-//		System.out.println("Se recive el vídeo");
+//		System.out.println("Se recive el vï¿½deo");
 //		try {
 ////			String path = "C:\\Users\\jtamb\\Desktop\\Trabajos\\Cuarto\\SSDD\\a"+userid+".mp4";
 ////			File file = new File(path);
 ////			Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
 //			System.out.println("Completado almacenaje");
 //			System.out.println("Mandando a Grpc");
-////			System.out.println("Tamaño del inputStream " + inputStream.readAllBytes().length);
+////			System.out.println("Tamaï¿½o del inputStream " + inputStream.readAllBytes().length);
 ////			byte[] bytes = new byte[1024];
 ////			while ( (bytes = inputStream.readNBytes(1024)).length != 0) {
 ////				System.out.println("Buenas noches: " + bytes);
@@ -72,10 +77,11 @@ public class UsersEndpoint {
 //	}
 
 	@POST
-	@Path("/{id}/video")
+	@Path("/{id}/{filename}/video")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response addVideo(@PathParam("id") String userid, InputStream inputStream) {
+	public Response addVideo(@PathParam("id") String userid, @PathParam("filename") String filename,
+			InputStream inputStream) {
 		System.out.println("Video recibido");
 		try {
 			byte[] videodata = inputStream.readAllBytes();
@@ -85,19 +91,19 @@ public class UsersEndpoint {
 				System.out.println(userid);
 			}
 
-			Optional<Video> v = impl.saveVideo(userid, "Prueba", videodata);
+			Optional<Video> v = impl.saveVideo(userid, filename, videodata);
 			if (v == null || !v.isPresent()) {
 				System.out.println("Una desgracia");
 			} else {
 				System.out.println("Todo fresco: " + v.get().getFilename());
 			}
 			// GRPC
-
-			impl.variosIDs(userid, new ByteArrayInputStream(videodata));
+			System.out.println("La id del vÃ­deo --->"+v.get().getId());
+			impl.variosIDs(v.get().getId(), new ByteArrayInputStream(videodata));
 
 			// Respuesta
-			return Response.status(Response.Status.CREATED)
-					.header("Location", "/users/" + userid + "/video/" + v.get().getId()).build();
+			return Response.status(Response.Status.CREATED).header("Location", "/users/" + userid + "/video/" + 10)
+					.build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.BAD_REQUEST).build();
@@ -108,8 +114,73 @@ public class UsersEndpoint {
 	@Path("/{id}/video/{vid}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getVideo(@PathParam("id") String uid, @PathParam("vid") String vid) {
+		var photos = impl.getPhotosFromVideos(vid);
+		System.out.println(photos.size());
+		byte[] concat = new byte[0];
+		for(Photo p : photos) {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try {
+				baos.write(concat);
+				baos.write(p.getData());
+				baos.write("\",\"".getBytes());
+				concat = baos.toByteArray();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		System.out.println(concat);
+		return Response.ok(concat).build();
+	}
 
-		return null;
+	@GET
+	@Path("/{id}/consultvideos")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getVideosWithUserId(@PathParam("id") String userid) {
+		System.out.println("Videos solicitados por el usuario con id: " + userid);
+
+		String json = "[";
+		List<Video> videos = impl.getVideosFromUser(userid);
+		for (Video vi : videos) {
+			json = json + "{\"filename\": \"" + vi.getFilename() + "\",\"id\": \"" + vi.getId() + "\"},";
+		}
+		if (json.length() > 1) {
+			json = json.substring(0, json.length() - 1);
+		}
+
+		json = json + "]";
+
+		System.out.println("Vï¿½deos: " + json);
+
+		return Response.ok(json).build();
+	}
+	
+	@GET
+	@Path("/{id}/getVideo")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getVideoWithId(@PathParam("id") String id) {
+		System.out.println("Video solicitado: " + id);
+
+		Optional<Video> video = impl.getVideoById(id);
+		String json = "{\"filename\": \"" + video.get().getFilename() + "\",\"id\": \"" + video.get().getId() + "\",\"date\": \"" + video.get().getDate() + "\",\"status\": \"" + video.get().getPstatus() + "\"}";
+
+		System.out.println("VÃ­deo: " + json);		
+		return Response.ok(json).build();
+	}
+	
+	@GET
+	@Path("/{id}/removeVideo")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response removeVideoWithId(@PathParam("id") String id) {
+		System.out.println("Video borrado: " + id);
+		Optional<Video> video = impl.getVideoById(id);
+		if(video.get().getPstatus().equals(PROCESS_STATUS.PROCESSED)) {
+			impl.removeVideo(id);
+			return Response.status(Response.Status.OK).build();
+		}
+		else {
+			return Response.status(Response.Status.BAD_REQUEST).build();
+		}
 	}
 
 }
