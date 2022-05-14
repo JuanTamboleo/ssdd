@@ -34,7 +34,7 @@ public class AppLogicImpl {
 				try {
 					photodata = Files.readAllBytes(listOfFiles[i].toPath());
 					photodao.addPhoto(videoID, photodata);
-					listOfFiles[i].delete();
+					listOfFiles[i].delete();	
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

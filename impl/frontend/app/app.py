@@ -73,14 +73,14 @@ def consultvideos():
 @app.route('/videoinformation/<video_id>', methods=['GET'])
 @login_required
 def consultvideo(video_id=0):
-    r = requests.get("http://localhost:8080/Service/users/" + video_id + "/getVideo");
+    r = requests.get("http://localhost:8080/Service/users/" + video_id + "/getVideo")
     vid = r.json()
 
     # Desde aquí he copiado y he pegado lo /photos
     for file in os.scandir('./static/images'):
         os.remove(file.path)
 
-    r = requests.get('http://localhost:8080/Service/users/1/video/0')
+    r = requests.get('http://localhost:8080/Service/users/' + current_user.get_id() + '/video/' + video_id)
 
     splits = r.content.split("\",\"".encode())
 
@@ -93,24 +93,6 @@ def consultvideo(video_id=0):
     return render_template('consultvideo.html', video=vid, images=images)
 
     # return render_template('consultvideo.html', video=vid)
-
-
-@app.route('/photos', methods=['GET'])
-def photos():
-    for file in os.scandir('./static/images'):
-        os.remove(file.path)
-
-    r = requests.get('http://localhost:8080/Service/users/1/video/0')
-
-    splits = r.content.split("\",\"".encode())
-
-    i = 0
-    for s in splits:
-        with open('./static/images/file' + str(i) + '.jpg', 'wb') as f:
-            f.write(splits[i])
-        i = i + 1
-    images = os.listdir('./static/images')
-    return render_template('photos.html', images=images)
 
 
 @app.route('/photos/<filename>')

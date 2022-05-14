@@ -115,7 +115,7 @@ public class UsersEndpoint {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getVideo(@PathParam("id") String uid, @PathParam("vid") String vid) {
 		var photos = impl.getPhotosFromVideos(vid);
-		System.out.println(photos.size());
+		System.out.println("VID " + vid + " Número de fotos" + photos.size());
 		byte[] concat = new byte[0];
 		for(Photo p : photos) {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -129,7 +129,6 @@ public class UsersEndpoint {
 			}
 			
 		}
-		System.out.println(concat);
 		return Response.ok(concat).build();
 	}
 

@@ -106,11 +106,8 @@ public class VideoFaces implements Runnable {
 			@Override
 			public void videoAtEnd(VideoDisplay<? extends Image<?, ?>> vd) {
 				System.out.println("End of video");
-				if (file.delete()) {
-					System.out.println("Se borró el fichero");
-				} else {
-					System.out.println("Pq no se ha borrado???");
-				}
+				file.deleteOnExit();
+//				file.delete();
 				impl.addAllPhotos(videoID);
 				responseObserver.onNext(VideoAvailability.newBuilder().setAvailable(true).build());
 				responseObserver.onCompleted();
