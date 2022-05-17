@@ -27,7 +27,9 @@
     </tbody>
 </table>
 
+{% if images %}
 <button type="button" onclick="location.href='removevideo/{{ video.id }}'">Borrar vídeo</button>
+{% endif %}
 
 <div class="row">
     <div class="col">
@@ -40,9 +42,14 @@
     </div>
 </div>
 
+{% if images %}
+
 {% for image in images %}
 <img src="{{url_for ('send_image', filename = image)}}" height="200" width="200"/>
 {% endfor %}
 
+{% else %}
+<p>El vídeo todavía se está procesando. Cuando termine, las capturas se mostrarán aquí.</p>
+{% endif %}
 
 {% endblock %}
