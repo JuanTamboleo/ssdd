@@ -36,20 +36,17 @@
         <br>
         <h1>Imágenes: </h1>
         <hr>
+        {% if images %}
+
         {% for image in images %}
         <img src="{{url_for ('send_image', filename = image)}}" height="200" width="200"/>
         {% endfor %}
+
+        {% else %}
+        <p>El vídeo todavía se está procesando. Cuando termine, las capturas se mostrarán aquí.</p>
+        {% endif %}
     </div>
 </div>
 
-{% if images %}
-
-{% for image in images %}
-<img src="{{url_for ('send_image', filename = image)}}" height="200" width="200"/>
-{% endfor %}
-
-{% else %}
-<p>El vídeo todavía se está procesando. Cuando termine, las capturas se mostrarán aquí.</p>
-{% endif %}
 
 {% endblock %}

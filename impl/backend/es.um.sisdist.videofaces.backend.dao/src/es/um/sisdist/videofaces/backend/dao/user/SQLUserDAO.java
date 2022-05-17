@@ -11,6 +11,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
+import java.util.Random;
 
 import es.um.sisdist.videofaces.backend.dao.models.User;
 
@@ -20,6 +21,7 @@ import es.um.sisdist.videofaces.backend.dao.models.User;
  */
 @SuppressWarnings("deprecation")
 public class SQLUserDAO implements IUserDAO {
+	private static String alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	Connection conn;
 
 	public SQLUserDAO() {
@@ -132,7 +134,11 @@ public class SQLUserDAO implements IUserDAO {
 			preparedStmt.setString(2, email);
 			preparedStmt.setString(3, User.md5pass(password));
 			preparedStmt.setString(4, name);
-			preparedStmt.setString(5, "TOKEN");
+			String token = "";
+			for(int i = 0; i < 32; i++) {
+				token = token + alphabet.charAt(new Random().nextInt(alphabet.length()));
+            }
+			preparedStmt.setString(5, token);
 			preparedStmt.setInt(6, 0);
 			preparedStmt.execute();
 			return Optional.of(new User(id, email, User.md5pass(password), name, "TOKEN", 0));
