@@ -2,10 +2,13 @@ package es.um.sisdist.videofaces.backend.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +34,9 @@ import jakarta.ws.rs.core.UriBuilder;
 public class TestClient {
 	public static void main(String[] args) {
 		AppLogicImpl impl = AppLogicImpl.getInstance();
-//		impl.deleteUsers();
+		impl.deletePhotos();
+		impl.deleteVideos();
+		impl.deleteUsers();
 
 		ClientConfig config = new ClientConfig();
 //		config.property(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
@@ -41,53 +46,16 @@ public class TestClient {
 		// Fluent interfaces
 
 		// Registrar usuario
-//		String uid = registerUser(service);
+		String uid = registerUser(service);
 
 		// Mandar un vídeo
+		sendVideo(service, uid);
 
 		// Comprobar si el vídeo está subido
-//		if (checkVideo(service, "0")) {
-//			System.out.println("Se ha procesado");
-//		} else {
-//			System.out.println("Se está procesando");
-//		}
+		checkVideo(service, "0");
 
 		// Consulta de las caras
 		getFaces(service, "0", "0");
-
-	}
-
-	private static void getFaces(WebTarget service, String uid, String vid) {
-		Response faces = service.path("users/" + uid + "/video/" + vid).request().get();
-		byte[] b = faces.readEntity(byte[].class);
-//		System.out.println(s);
-		String s = stringFromBytes(b);
-		String[] trozos = s.split("\",\"");
-		for (int i = 0; i < trozos.length; i++) {
-			byte[] bytes = trozos[i].getBytes();
-			try {
-				FileOutputStream fos = new FileOutputStream("photos/f" + i + ".jpg");
-				fos.write(bytes);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	public static String stringFromBytes(byte byteData[]) {
-		char charData[] = new char[byteData.length];
-		for (int i = 0; i < charData.length; i++) {
-			charData[i] = (char) (((int) byteData[i]) & 0xFF);
-		}
-		return new String(charData);
-	}
-
-	private static boolean checkVideo(WebTarget service, String vid) {
-		Response checkVideo = service.path("users/" + vid + "/getVideo").request().get();
-		if (checkVideo.readEntity(Map.class).get("status").equals("PROCESSED")) {
-			return true;
-		}
-		return false;
 
 	}
 
@@ -98,6 +66,7 @@ public class TestClient {
 		data.put("password", "1234");
 
 		String register = service.path("register").request().post(Entity.json(data), String.class);
+		System.out.println("Registrado usuario con:");
 
 		String[] trozos = register.split("\"string\":\"");
 		String uid = register.substring(register.indexOf(trozos[1]),
@@ -110,13 +79,54 @@ public class TestClient {
 		return uid;
 	}
 
-//    private static URI getBaseURI()
-//    {
-//        return UriBuilder.fromUri(
-//                "http://localhost:8080/es.um.sisdist.RestTest").build();
-//    }
+	private static void sendVideo(WebTarget service, String uid) {
+		File file = new File("video/classroom.mp4");
+		try {
+			InputStream inputStream = new FileInputStream(file);
+			Response video = service.path("users/" + uid + "/classroom.mp4/video").request()
+					.post(Entity.entity(inputStream, MediaType.MULTIPART_FORM_DATA));
+			System.out.println("\nStatus del envío:" + video.getStatus());
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void checkVideo(WebTarget service, String vid) {
+		Response checkVideo = service.path("users/" + vid + "/getVideo").request().get();
+		while (checkVideo.readEntity(Map.class).get("status").equals("PROCESSING")) {
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		System.out.println("\nSe ha procesado");
+	}
+
+	private static void getFaces(WebTarget service, String uid, String vid) {
+		Response faces = service.path("users/" + uid + "/video/" + vid).request().get();
+		byte[] b = faces.readEntity(byte[].class);
+
+		int aux = 0;
+		int contador = 0;
+		for (int i = 2; i < b.length; i++) {
+			if (b[i - 2] == '"' && b[i - 1] == ',' && b[i] == '"') {
+				byte[] baux = Arrays.copyOfRange(b, aux, i - 3);
+				try {
+					FileOutputStream fos = new FileOutputStream("photos/f" + contador + ".jpg");
+					fos.write(baux);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				contador++;
+				aux = i + 1;
+			}
+		}
+		System.out.println("\nFotos recibidas, están en la carpetas photos");
+	}
 
 	private static URI getBaseURI() {
-		return UriBuilder.fromUri("http://localhost:8080/Service").build();
+		return UriBuilder.fromUri("http://localhost:8080/rest").build();
 	}
+
 }

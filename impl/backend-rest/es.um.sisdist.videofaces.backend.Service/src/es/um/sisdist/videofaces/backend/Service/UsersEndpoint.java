@@ -79,23 +79,24 @@ public class UsersEndpoint {
 		}
 	}
 
-	@GET
-	@Path("/auth/{id}/video")
+	@POST
+	@Path("/auth/{id}/{filename}/video")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getVideo(@Context UriInfo uriInfo, @Context HttpHeaders httpheaders, @PathParam("id") String uid,
-			InputStream inputStream) {
-		if (validarUsuario(httpheaders, uriInfo, uid)) {
+			@PathParam("filename") String filename, InputStream inputStream) {
+		if (validateUser(httpheaders, uriInfo, uid)) {
 			try {
 				byte[] videodata = inputStream.readAllBytes();
-				Optional<Video> v = impl.saveVideo(uid, "Sin nombre", videodata);
+				Optional<Video> v = impl.saveVideo(uid, filename, videodata);
 
 				// GRPC
 				impl.variosIDs(v.get().getId(), new ByteArrayInputStream(videodata));
 
 				// Respuesta
 				return Response.status(Response.Status.ACCEPTED)
-						.location(new URI("http://localhost:8080/Service/prueba/video/" + v.get().getId())).build();
+						.location(new URI("http://localhost:8080/Service/auth/" + uid + "video/" + v.get().getId()))
+						.build();
 			} catch (Exception e) {
 				e.printStackTrace();
 				return Response.status(Response.Status.BAD_REQUEST).build();
@@ -106,9 +107,9 @@ public class UsersEndpoint {
 
 	@GET
 	@Path("/auth/{id}/video/{vid}")
-	public Response acceso(@Context UriInfo uriInfo, @Context HttpHeaders httpheaders, @PathParam("id") String uid,
+	public Response videoAccess(@Context UriInfo uriInfo, @Context HttpHeaders httpheaders, @PathParam("id") String uid,
 			@PathParam("vid") String vid) {
-		if (validarUsuario(httpheaders, uriInfo, uid)) {
+		if (validateUser(httpheaders, uriInfo, uid)) {
 			if (impl.getVideoById(vid).get().getPstatus().equals(PROCESS_STATUS.PROCESSED)) {
 				return Response.ok().entity("Está procesado").type(MediaType.TEXT_PLAIN).build();
 			} else {
@@ -119,18 +120,16 @@ public class UsersEndpoint {
 		return Response.status(Response.Status.UNAUTHORIZED).build();
 	}
 
-	private boolean validarUsuario(HttpHeaders httpheaders, UriInfo uriInfo, String uid) {
-		java.util.TimeZone tc = java.util.TimeZone.getTimeZone("UTC");
-		var df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-		df.setTimeZone(tc);
+	private boolean validateUser(HttpHeaders httpheaders, UriInfo uriInfo, String uid) {
+		if ((httpheaders.getRequestHeaders().get("user") != null)
+				&& !(httpheaders.getRequestHeaders().get("date") != null)) {
+			String md5Request = User
+					.md5pass(uriInfo.getAbsolutePath() + httpheaders.getRequestHeaders().get("date").get(0)
+							+ impl.getUserById(httpheaders.getRequestHeaders().get("user").get(0)).get().getTOKEN());
 
-		String md5Request = User.md5pass(uriInfo.getAbsolutePath() + httpheaders.getRequestHeaders().get("date").get(0)
-				+ impl.getUserById(httpheaders.getRequestHeaders().get("user").get(0)).get().getTOKEN());
-
-		if (uid.equals(httpheaders.getRequestHeaders().get("user").get(0))
-				&& httpheaders.getRequestHeaders().get("date").get(0).compareTo(df.format(new java.util.Date())) == 1
-				&& httpheaders.getRequestHeaders().get("auth-token").equals(md5Request)) {
-			return true;
+			if (httpheaders.getRequestHeaders().get("auth-token").equals(md5Request)) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -138,7 +137,7 @@ public class UsersEndpoint {
 	@GET
 	@Path("/{id}/video/{vid}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response uploadVideo(@PathParam("id") String uid, @PathParam("vid") String vid) {
+	public Response uploadPhotos(@PathParam("id") String uid, @PathParam("vid") String vid) {
 		var photos = impl.getPhotosFromVideos(vid);
 		byte[] concat = new byte[0];
 		Optional<Video> video = impl.getVideoById(vid);

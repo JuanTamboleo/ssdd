@@ -17,6 +17,7 @@ var url = "consultvideo/" + string(video.id)
         </div>
     </div>
 
+    {% if videos %}
     <table id="videos" class="table table-stripped">
         <thead>
             <tr>
@@ -31,6 +32,9 @@ var url = "consultvideo/" + string(video.id)
             {% endfor %}
         </tbody>
     </table>
+    {% else %}
+    <p>No hay ningún vídeo subido. Para subir un vídeo, pulse en el apartado "Subir un vídeo" de la cabecera.</p>
+    {% endif %}
 
 </div>
 

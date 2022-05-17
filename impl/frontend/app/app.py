@@ -1,6 +1,4 @@
-import os
-
-import requests, json
+import requests, json, sys, os
 from flask import Flask, render_template, send_from_directory, url_for, request, redirect, flash, json
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
 
@@ -34,10 +32,10 @@ def index():
     return render_template('index.html')
 
 
-app.config[
-    "IMAGE_UPLOADS"] = "/Users/jtamb/Desktop/Trabajos/Cuarto/SSDD/ssdd-21-22/impl/frontend/app/static/images/uploads"
 app.config["ALLOWED_VIDEO_EXTENSIONS"] = ["MP4", "AVI", "MKV"]
 FILE_UPLOAD_MAX_MEMORY_SIZE = int(1024 * 1024 * 1024 * 1024)
+
+url = "http://host.docker.internal:8080/rest/"
 
 
 def allowed_video(filename):
@@ -52,7 +50,7 @@ def allowed_video(filename):
 
 @app.route('/consultvideos', methods=['GET'])
 def consultvideos():
-    r = requests.get("http://localhost:8080/Service/users/" + current_user.get_id() + "/consultvideos");
+    r = requests.get(url + "users/" + current_user.get_id() + "/consultvideos");
     vids = r.json()
     return render_template('consultvideosscreen.html', videos=vids)
 
@@ -60,23 +58,23 @@ def consultvideos():
 @app.route('/videoinformation/<video_id>', methods=['GET'])
 @login_required
 def consultvideo(video_id=0):
-    r = requests.get("http://localhost:8080/Service/users/" + video_id + "/getVideo");
+
+    r = requests.get(url + "users/" + video_id + "/getVideo");
     vid = r.json()
 
-    for file in os.scandir('./static/images'):
+    for file in os.scandir(sys.path[0] + "/static/images"):
         os.remove(file.path)
 
-    r = requests.get('http://localhost:8080/Service/users/' + current_user.get_id() + '/video/' + video_id)
+    r = requests.get(url + 'users/' + current_user.get_id() + '/video/' + video_id)
 
     if not len(r.content) == 0:
         splits = r.content.split("\",\"".encode())
-
         i = 0
         for s in splits:
-            with open('./static/images/file' + str(i) + '.jpg', 'wb') as f:
+            with open(sys.path[0] + "/static/images/file" + str(i) + '.jpg', 'wb') as f:
                 f.write(splits[i])
             i = i + 1
-        images = os.listdir('./static/images')
+        images = os.listdir(sys.path[0] + "/static/images")
         return render_template('consultvideo.html', video=vid, images=images)
     else:
         return render_template('consultvideo.html', video=vid)
@@ -84,13 +82,13 @@ def consultvideo(video_id=0):
 
 @app.route('/photos/<filename>')
 def send_image(filename):
-    return send_from_directory("static/images", filename)
+    return send_from_directory(sys.path[0] + "/static/images", filename)
 
 
 @app.route('/videoinformation/removevideo/<video_id>', methods=['GET'])
 @login_required
 def removevideo(video_id=0):
-    r = requests.get("http://localhost:8080/Service/users/" + video_id + "/removeVideo");
+    r = requests.get(url + "users/" + video_id + "/removeVideo");
     return redirect(url_for('consultvideos'))
 
 
@@ -105,7 +103,7 @@ def uploadvideo():
                 error = "Debe tener un nombre"
             elif allowed_video(video.filename):
                 r = requests.post(
-                    "http://localhost:8080/Service/users/" + current_user.get_id() + "/" + video.filename + "/video",
+                    url + "users/" + current_user.get_id() + "/" + video.filename + "/video",
                     data=video)
             else:
                 error = "No está en el formato correcto"
@@ -121,7 +119,7 @@ def login():
         form = LoginForm(request.form)
         if request.method == "POST" and form.validate_on_submit():
             payload = {'email': form.email.data, 'password': form.password.data}
-            r = requests.post('http://localhost:8080/Service/checkLogin', json=payload)
+            r = requests.post(url + 'checkLogin', json=payload)
             if r.status_code == 200:
                 user = User.get_user(form.email.data.encode('utf-8'))
                 if user is None:
@@ -142,7 +140,7 @@ def register():
     error = None
     if request.method == "POST" and form.validate_on_submit():
         payload = {'email': form.email.data, 'name': form.username.data, 'password': form.password.data}
-        r = requests.post('http://localhost:8080/Service/register', json=payload)
+        r = requests.post(url + 'register', json=payload)
         if r.status_code == 201:
             user = User(int(r.json()['id']['string']), form.username, form.email.data.encode('utf-8'),
                         form.password.data.encode('utf-8'))
@@ -157,7 +155,7 @@ def register():
 @app.route('/profile', methods=['GET'])
 @login_required
 def profile():
-    r = requests.get('http://localhost:8080/Service/users/' + current_user.get_id())
+    r = requests.get(url + 'users/' + current_user.get_id())
     return render_template('profile.html', id=r.json()['id']['string'], email=r.json()['email']['string'],
                            token=r.json()['TOKEN']['string'], name=r.json()['name']['string'],
                            visits=r.json()['visits']['string'], videos=r.json()['videos']['string'])
@@ -179,4 +177,7 @@ def load_user(user_id):
 
 
 if __name__ == '__main__':
+    if not os.path.exists(sys.path[0] + "/static/images"):
+        os.makedirs(sys.path[0] + "/static/images")
+    # print(sys.path)
     app.run(debug=True, host='0.0.0.0')
