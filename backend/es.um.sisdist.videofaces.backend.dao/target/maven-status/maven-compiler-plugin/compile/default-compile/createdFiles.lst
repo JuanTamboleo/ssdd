@@ -1,0 +1,13 @@
+es\um\sisdist\videofaces\backend\dao\user\IUserDAO.class
+es\um\sisdist\videofaces\backend\dao\photo\SQLPhotoDAO.class
+es\um\sisdist\videofaces\backend\dao\user\SQLUserDAO.class
+es\um\sisdist\videofaces\backend\dao\models\Photo.class
+es\um\sisdist\videofaces\backend\dao\IDAOFactory.class
+es\um\sisdist\videofaces\backend\dao\models\Video$PROCESS_STATUS.class
+es\um\sisdist\videofaces\backend\dao\models\Video.class
+es\um\sisdist\videofaces\backend\dao\photo\IPhotoDao.class
+module-info.class
+es\um\sisdist\videofaces\backend\dao\video\IVideoDAO.class
+es\um\sisdist\videofaces\backend\dao\DAOFactoryImpl.class
+es\um\sisdist\videofaces\backend\dao\video\SQLVideoDAO.class
+es\um\sisdist\videofaces\backend\dao\models\User.class
