@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% endblock %}
+
+{% block main %}
+
+<h1 class="mt-5" style="position:relative; margin:auto; margin-bottom:0px;">
+    Pulse en la imagen para subir un vídeo
+</h1>
+<p class="lead" style="position:relative; margin:auto; margin-top:0px; margin-bottom:0px;">
+    Formatos aceptados: MP4, AVI, MKV. 
+</p>
+
+<button type="button" style="background-color:white; border:none; margin: 0; position: relative; margin-top: 120px;"><img src="{{url_for ('static', filename = './images/uploadvideo.png')}}" height ="200" width="200" /></button>
+
+{% endblock %}

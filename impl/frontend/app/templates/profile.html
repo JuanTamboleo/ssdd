@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="title">
+    Welcome, {{current_user.name}}!!
+</h1>
+<br>
+<h1 class="title">
+    ID: {{id}}
+</h1>
+<br>
+<h1 class="title">
+    Email: {{email}}
+</h1>
+<br>
+<h1 class="title">
+    Name: {{name}}
+</h1>
+<br>
+<h1 class="title">
+    TOKEN: {{token}}
+</h1>
+<br>
+<h1 class="title">
+    Número de accesos: {{visits}}
+</h1>
+<br>
+<h1 class="title">
+    Número de vídeos: {{videos}}
+</h1>
+{% endblock %}
