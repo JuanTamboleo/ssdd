@@ -111,9 +111,9 @@ public class UsersEndpoint {
 			@PathParam("vid") String vid) {
 		if (validateUser(httpheaders, uriInfo, uid)) {
 			if (impl.getVideoById(vid).get().getPstatus().equals(PROCESS_STATUS.PROCESSED)) {
-				return Response.ok().entity("Está procesado").type(MediaType.TEXT_PLAIN).build();
+				return Response.ok().entity("Estï¿½ procesado").type(MediaType.TEXT_PLAIN).build();
 			} else {
-				return Response.status(Response.Status.NO_CONTENT).entity("No está procesado")
+				return Response.status(Response.Status.NO_CONTENT).entity("No estï¿½ procesado")
 						.type(MediaType.TEXT_PLAIN).build();
 			}
 		}
@@ -121,13 +121,12 @@ public class UsersEndpoint {
 	}
 
 	private boolean validateUser(HttpHeaders httpheaders, UriInfo uriInfo, String uid) {
-		if ((httpheaders.getRequestHeaders().get("user") != null)
-				&& !(httpheaders.getRequestHeaders().get("date") != null)) {
+		if ((httpheaders.getRequestHeaders().get("user") != null) && (httpheaders.getRequestHeaders().get("date") != null)) {
 			String md5Request = User
 					.md5pass(uriInfo.getAbsolutePath() + httpheaders.getRequestHeaders().get("date").get(0)
 							+ impl.getUserById(httpheaders.getRequestHeaders().get("user").get(0)).get().getTOKEN());
 
-			if (httpheaders.getRequestHeaders().get("auth-token").equals(md5Request)) {
+			if (httpheaders.getRequestHeaders().get("auth-token").toString().equals("[" + md5Request + "]")) {
 				return true;
 			}
 		}
